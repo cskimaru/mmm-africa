@@ -266,7 +266,8 @@ def paint(key: str) -> str:
     # Far hills, then the plain
     parts.append(
         f'<path filter="url(#hill)" d="M0,1005 C180,965 330,985 520,968 C700,952 860,990 1060,972 '
-        f'C1260,955 1450,985 1620,962 C1700,952 1760,958 1800,955 L1800,1200 L0,1200 Z" fill="{s.far_hill}" opacity="0.85"/>'
+        f'C1260,955 1450,985 1620,962 C1700,952 1760,958 1800,955 L1800,1200 L0,1200 Z" '
+        f'fill="{s.far_hill}" opacity="0.85"/>'
     )
     # Distant acacias on the horizon
     for fx, fh in ((640, 26), (700, 18), (930, 30), (1200, 22), (1265, 15), (1450, 24)):
