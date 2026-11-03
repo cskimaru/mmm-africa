@@ -179,7 +179,7 @@ services:
     networks: [monitoring, edge]
 
   grafana:
-    image: grafana/grafana:11.4.0
+    image: grafana/grafana:13.3.0
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
