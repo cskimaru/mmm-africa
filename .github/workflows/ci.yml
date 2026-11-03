@@ -91,8 +91,12 @@ jobs:
         run: |
           docker compose config -q
           docker compose -f docker-compose.yml -f docker-compose.dev.yml config -q
-      - name: Caddyfile is valid
-        run: docker run --rm -e SITE_ADDRESS=example.com -v "$PWD/deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.8.4-alpine caddy validate --config /etc/caddy/Caddyfile
+      - name: Caddyfile is valid (public and private-preview modes)
+        # Mount the whole folder: the Caddyfile imports access-public.caddy / access-preview.caddy.
+        run: |
+          docker run --rm -e SITE_ADDRESS=example.com -v "$PWD/deploy/caddy:/etc/caddy:ro" caddy:2.8.4-alpine caddy validate --config /etc/caddy/Caddyfile
+          docker run --rm -e SITE_ADDRESS=example.com -e SITE_MODE=preview -e 'PREVIEW_PASSWORD_HASH=$2a$14$abcdefghijklmnopqrstuuJ7b0Qm9mH2gq2Vq1g2y0b1b0b1b0b1b' \
+            -v "$PWD/deploy/caddy:/etc/caddy:ro" caddy:2.8.4-alpine caddy validate --config /etc/caddy/Caddyfile
       - name: Prometheus config and alert rules are valid
         run: |
           docker run --rm -v "$PWD/deploy/prometheus:/p:ro" --entrypoint promtool prom/prometheus:v2.55.1 check rules /p/alerts.yml
