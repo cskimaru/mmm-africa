@@ -77,7 +77,7 @@ jobs:
           done
           pip-audit --strict ./libs/common
       - name: Secrets accidentally committed (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
