@@ -13,6 +13,8 @@ class Settings(CommonSettings):
     asset_version: str = ""
     # Private preview before launch: shows a "not yet public" bar. The gateway adds a password.
     site_preview: bool = False
+    # Colour scheme for the whole site: sunrise, coast, highlands or evening.
+    site_palette: str = "sunrise"
     # Public contact details shown in the footer and on the contact page.
     contact_email: str = ""
     contact_phone: str = ""

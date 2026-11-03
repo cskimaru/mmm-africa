@@ -28,6 +28,13 @@ app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 
 AFRICA_MAP = json.loads((HERE / "africa_map.json").read_text())
+# (key, name shown to reviewers). Each has a painted background in static/art/<key>.webp.
+PALETTES = [
+    ("sunrise", "Savanna sunrise"),
+    ("coast", "Coast"),
+    ("highlands", "Highlands"),
+    ("evening", "Evening"),
+]
 TOPICS = {
     "general": "General question",
     "start_chapter": "Starting a chapter in my country",
@@ -72,6 +79,8 @@ templates.env.globals.update(
     asset_version=settings.asset_version or static_fingerprint(HERE / "static"),
     site_origin=settings.site_origin,
     site_preview=settings.site_preview,
+    palettes=PALETTES,
+    palette=settings.site_palette if settings.site_palette in dict(PALETTES) else "sunrise",
     contact_email=settings.contact_email,
     contact_phone=settings.contact_phone,
     map_source=AFRICA_MAP["source"],

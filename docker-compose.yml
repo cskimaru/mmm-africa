@@ -51,6 +51,7 @@ services:
       <<: *service-env
       DIRECTORY_URL: http://directory:8000
       SITE_PREVIEW: ${SITE_PREVIEW:-false}
+      SITE_PALETTE: ${SITE_PALETTE:-sunrise}
       CONTACT_EMAIL: ${CONTACT_EMAIL:-}
       CONTACT_PHONE: ${CONTACT_PHONE:-}
     networks: [edge, monitoring]

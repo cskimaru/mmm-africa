@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-palette="{{ palette }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -13,13 +13,19 @@
 {% block meta %}{% endblock %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="/static/site.css?v={{ asset_version }}">
 <link rel="icon" href="/static/mark.svg" type="image/svg+xml">
+{% if site_preview %}<script src="/static/palette.js?v={{ asset_version }}"></script>{% endif %}
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-{% if site_preview %}<div class="preview-bar">Private preview: this site is not public yet.</div>{% endif %}
+{% if site_preview %}<div class="preview-bar"><div class="wrap">
+  <span><strong>Private preview:</strong> this site is not public yet. Try the colour schemes:</span>
+  <div class="palette-picker" role="radiogroup" aria-label="Colour scheme">
+    {% for key, name in palettes %}<button type="button" role="radio" data-palette="{{ key }}" aria-checked="{{ 'true' if key == palette else 'false' }}"><span class="dot dot-{{ key }}"></span>{{ name }}</button>{% endfor %}
+  </div>
+</div></div>{% endif %}
 <header class="site-header">
   <div class="family-bar">
     <div class="wrap">
