@@ -10,5 +10,8 @@ RUN --mount=type=secret,id=build_ca,required=false \
     apt-get update && apt-get install -y --no-install-recommends ca-certificates gnupg rclone \
  && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* /etc/apt/apt.conf.d/99build-ca /tmp/build_ca.crt
 COPY backup.sh restore.sh loop.sh /usr/local/bin/
-RUN chmod 0555 /usr/local/bin/backup.sh /usr/local/bin/restore.sh /usr/local/bin/loop.sh
+# gosu comes with the postgres image for its own entrypoint, which this container never runs. It is built
+# with an old Go toolchain that image scanners flag, so it is removed.
+RUN chmod 0555 /usr/local/bin/backup.sh /usr/local/bin/restore.sh /usr/local/bin/loop.sh \
+ && rm -f /usr/local/bin/gosu
 ENTRYPOINT ["/usr/local/bin/loop.sh"]
