@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.db
+.env
+secrets/*
+!secrets/.gitkeep
+deploy/generated/
+backups/
+build/
+*.egg-info/
+.coverage
+.coverage.*
+htmlcov/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example

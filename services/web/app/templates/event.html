@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} · MMM Africa{% endblock %}
+{% block description %}{{ event.summary or event.title }}{% endblock %}
+{% block body %}
+<section class="page-head"><div class="wrap">
+  <p class="eyebrow">{{ {"upcoming": "Coming up", "happening": "Happening now", "ended": "Event complete · Thank you"}[event.state] }}</p>
+  <h1>{{ event.title }}</h1>
+  {% if event.theme %}<p class="theme">“{{ event.theme }}”{% if event.scripture %} · {{ event.scripture }}{% endif %}</p>{% endif %}
+</div></section>
+<section class="section"><div class="wrap grid grid-2">
+  <div class="prose">
+    {% if event.state == "ended" and event.recap %}<h2>Thank you</h2><p>{{ event.recap }}</p>{% endif %}
+    {% if event.summary %}<h2>{{ "About the event" if event.state != "ended" else "What happened" }}</h2><p>{{ event.summary }}</p>{% endif %}
+    {% if event.state != "ended" and event.register_url %}<p><a class="btn" href="{{ event.register_url }}" rel="noopener" target="_blank">Register ↗</a></p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>At a glance</h2>
+    <ul class="facts">
+      <li><span>{{ "Held" if event.state == "ended" else "Dates" }}</span>{{ event.starts_on | date_range(event.ends_on) }}</li>
+      {% if event.venue %}<li><span>Venue</span>{{ event.venue }}</li>{% endif %}
+      {% if event.location %}<li><span>Location</span>{{ event.location }}</li>{% endif %}
+      {% if event.host %}<li><span>Hosted by</span><a href="/chapters/{{ event.host.slug }}">{{ event.host.name }}</a></li>{% endif %}
+    </ul>
+    {% if event.host and event.host.website_url %}<p class="muted small">Photos and local details are on the host chapter's website: <a href="{{ event.host.website_url }}" rel="noopener" target="_blank">{{ event.host.website_url | replace("https://", "") }} ↗</a></p>{% endif %}
+  </div>
+</div></section>
+{% endblock %}

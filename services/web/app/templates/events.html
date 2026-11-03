@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card %}
+{% block title %}Events · MMM Africa{% endblock %}
+{% block body %}
+<section class="page-head"><div class="wrap">
+  <p class="eyebrow">Events</p>
+  <h1>Shared activities</h1>
+  <p>Gatherings the African Chapter holds with its national chapters, including the Annual Convention.</p>
+</div></section>
+<section class="section"><div class="wrap stack-lg">
+  <div>
+    <h2>Coming up</h2>
+    {% if upcoming %}<div class="grid grid-3">{% for e in upcoming %}{{ event_card(e) }}{% endfor %}</div>
+    {% else %}<p class="muted">The next gathering will be announced here.</p>{% endif %}
+  </div>
+  {% if past %}
+  <div>
+    <h2>Past events</h2>
+    <div class="grid grid-3">{% for e in past %}{{ event_card(e) }}{% endfor %}</div>
+  </div>
+  {% endif %}
+</div></section>
+{% endblock %}

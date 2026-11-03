@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Leadership · MMM Africa{% endblock %}
+{% block body %}
+<section class="page-head"><div class="wrap">
+  <p class="eyebrow">Leadership</p>
+  <h1>African Chapter leadership</h1>
+  <p>The continental officers who coordinate the African Chapter. National chapters elect their own leaders.</p>
+</div></section>
+<section class="section"><div class="wrap">
+  {% if unit.officers %}
+  <div class="grid grid-4">
+    {% for o in unit.officers %}
+    <div class="card person"><span class="avatar big">{{ o.name | initials }}</span><h3>{{ o.name }}</h3><p class="role">{{ o.role }}</p>{% if o.term %}<p class="meta">{{ o.term }}</p>{% endif %}{% if o.email %}<p><a href="mailto:{{ o.email }}">{{ o.email }}</a></p>{% endif %}</div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">The African Chapter's leadership team will be listed here soon.</p>
+  {% endif %}
+</div></section>
+{% endblock %}

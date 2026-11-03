@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card %}
+{% block title %}{{ unit.name }} · MMM Africa{% endblock %}
+{% block description %}{{ unit.summary or unit.name }}{% endblock %}
+{% block body %}
+<section class="page-head"><div class="wrap">
+  <p class="eyebrow">National chapter · {{ "Established" if unit.status == "established" else "Forming" }}</p>
+  <h1>{{ unit.name }}{% if unit.short_name %} ({{ unit.short_name }}){% endif %}</h1>
+  {% if unit.summary %}<p>{{ unit.summary }}</p>{% endif %}
+  {% if unit.website_url %}<p><a class="btn" href="{{ unit.website_url }}" rel="noopener" target="_blank">Visit the {{ unit.short_name or unit.name }} website ↗</a></p>{% endif %}
+</div></section>
+
+<section class="section"><div class="wrap grid grid-2">
+  <div class="card">
+    <h2>Contact</h2>
+    <ul class="facts">
+      {% if unit.city %}<li><span>Based in</span>{{ unit.city }}</li>{% endif %}
+      {% if unit.email %}<li><span>Email</span><a href="mailto:{{ unit.email }}">{{ unit.email }}</a></li>{% endif %}
+      {% if unit.phone %}<li><span>Phone</span>{{ unit.phone }}</li>{% endif %}
+      {% if unit.website_url %}<li><span>Website</span><a href="{{ unit.website_url }}" rel="noopener" target="_blank">{{ unit.website_url | replace("https://", "") }}</a></li>{% endif %}
+    </ul>
+    <p class="muted small">This chapter keeps its own leadership and finances. For membership, giving or local programmes, contact the chapter directly.</p>
+  </div>
+  <div class="card">
+    <h2>Chapter leaders</h2>
+    {% if unit.officers %}
+    <ul class="people">{% for o in unit.officers %}<li><span class="avatar">{{ o.name | initials }}</span><span><strong>{{ o.name }}</strong><small>{{ o.role }}{% if o.term %} · {{ o.term }}{% endif %}</small></span></li>{% endfor %}</ul>
+    {% else %}
+    <p class="muted">The chapter's leadership team is listed on its own website.</p>
+    {% endif %}
+  </div>
+</div></section>
+
+{% if events %}
+<section class="section alt"><div class="wrap">
+  <div class="section-head"><p class="eyebrow">Shared activities</p><h2>Events hosted by {{ unit.short_name or unit.name }}</h2></div>
+  <div class="grid grid-3">{% for e in events %}{{ event_card(e) }}{% endfor %}</div>
+</div></section>
+{% endif %}
+{% endblock %}

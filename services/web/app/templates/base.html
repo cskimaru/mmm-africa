@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{% block title %}MMM Africa · Medical Missionary Movement, African Chapter{% endblock %}</title>
+<meta name="description" content="{% block description %}The Medical Missionary Movement African Chapter unites national chapters across Africa in health ministry and the Gospel commission, under MMM International.{% endblock %}">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="{{ self.description() }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ site_origin }}{{ request.url.path }}">
+{% block meta %}{% endblock %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/static/site.css?v={{ asset_version }}">
+<link rel="icon" href="/static/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{% if site_preview %}<div class="preview-bar">Private preview: this site is not public yet.</div>{% endif %}
+<header class="site-header">
+  <div class="family-bar">
+    <div class="wrap">
+      <nav aria-label="MMM family" class="crumbs">
+        <a href="https://medicalmissionarymovement.org/" rel="noopener" target="_blank">MMM International ↗</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="true">African Chapter</span>
+        <span aria-hidden="true">›</span>
+        <a href="/chapters">National chapters</a>
+      </nav>
+    </div>
+  </div>
+  <div class="wrap nav">
+    <a href="/" class="brand">
+      <img src="/static/mark.svg" alt="" width="40" height="40">
+      <span><strong>MMM Africa</strong><small>Medical Missionary Movement · African Chapter</small></span>
+    </a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Open the menu">
+    <label for="nav-toggle" class="nav-burger" aria-hidden="true"><span></span><span></span><span></span></label>
+    <nav class="nav-links" aria-label="Main">
+      {% for key, href, label in [("home","/","Home"),("about","/about","About"),("chapters","/chapters","Chapters"),("leadership","/leadership","Leadership"),("events","/events","Events"),("contact","/contact","Contact")] %}
+      <a href="{{ href }}"{% if nav == key %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+  </div>
+</header>
+<main id="main">
+{% if degraded %}<div class="wrap"><p class="banner">Some information could not be loaded just now. You may be seeing an older copy; please check back shortly.</p></div>{% endif %}
+{% block body %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <a href="/" class="brand brand--light"><img src="/static/mark.svg" alt="" width="36" height="36"><span><strong>MMM Africa</strong></span></a>
+      <p>The African Chapter of the Medical Missionary Movement: national chapters across the continent, one family under MMM International.</p>
+    </div>
+    <div>
+      <h2>African Chapter</h2>
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/chapters">National chapters</a></li>
+        <li><a href="/leadership">Leadership</a></li>
+        <li><a href="/events">Events</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2>MMM family</h2>
+      <ul>
+        <li><a href="https://medicalmissionarymovement.org/" rel="noopener" target="_blank">MMM International ↗</a></li>
+        <li><a href="https://mmmkenya.org" rel="noopener" target="_blank">MMM Kenya Chapter ↗</a></li>
+        <li><a href="/chapters#start">Start a chapter</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2>Contact</h2>
+      <ul>
+        <li><a href="/contact">Send us a message</a></li>
+        {% if contact_email %}<li>{{ contact_email }}</li>{% endif %}
+        {% if contact_phone %}<li>{{ contact_phone }}</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>© {{ year }} Medical Missionary Movement, African Chapter.</span>
+    <span>Map: {{ map_source }} · <a href="/officers">Officers' sign-in</a></span>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="/static/api.js?v={{ asset_version }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

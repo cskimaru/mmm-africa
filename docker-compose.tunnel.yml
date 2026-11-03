@@ -1,0 +1,35 @@
+# Share the site running on this computer through Cloudflare. Use `make share`, which fills in
+# PUBLIC_URL and the tunnel command; see docs/share-from-your-computer.md.
+#   Quick tunnel (free, no account): a random https://….trycloudflare.com address.
+#   Named tunnel (your own domain on a free Cloudflare account): a permanent address such as
+#   https://mmmafrica.org. Set CLOUDFLARE_TUNNEL_TOKEN and PUBLIC_HOSTNAME in .env.
+x-public: &public
+  SITE_ORIGIN: ${PUBLIC_URL:?run make share instead of using this file directly}
+  EXTRA_ORIGINS: http://localhost:8080
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2025.10.0
+    command: ${TUNNEL_COMMAND:-tunnel --no-autoupdate --url http://caddy:80}
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    restart: unless-stopped
+    networks: [edge]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    logging: { driver: json-file, options: { max-size: "5m", max-file: "2" } }
+
+  caddy:
+    environment:
+      CADDY_TRUSTED_PROXIES: private_ranges
+  web:
+    environment: *public
+  auth:
+    environment:
+      <<: *public
+      COOKIE_SECURE: "true"
+  directory:
+    environment: *public
+  backup:
+    environment:
+      BACKUP_ON_START: "true"

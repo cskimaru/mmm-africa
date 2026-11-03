@@ -1,0 +1,39 @@
+{% macro africa_map(countries, viewbox, link=true) %}
+<figure class="africa-map">
+  <svg viewBox="{{ viewbox }}" role="img" aria-labelledby="map-title">
+    <title id="map-title">Map of Africa showing MMM national chapters</title>
+    {% for c in countries %}
+      {% if c.unit and link %}
+      <a href="/chapters/{{ c.unit.slug }}"><path d="{{ c.path }}" class="country is-{{ c.status }}"><title>{{ c.name }}: {{ c.unit.name }}</title></path></a>
+      {% else %}
+      <path d="{{ c.path }}" class="country{% if c.status %} is-{{ c.status }}{% endif %}"><title>{{ c.name }}</title></path>
+      {% endif %}
+    {% endfor %}
+  </svg>
+  <figcaption class="legend">
+    <span><i class="swatch is-established"></i>Established chapter</span>
+    <span><i class="swatch is-forming"></i>Chapter forming</span>
+    <span><i class="swatch"></i>Open for a chapter</span>
+  </figcaption>
+</figure>
+{% endmacro %}
+
+{% macro chapter_card(u) %}
+<a class="card chapter-card" href="/chapters/{{ u.slug }}">
+  <span class="pill is-{{ u.status }}">{{ "Established" if u.status == "established" else "Forming" }}</span>
+  <h3>{{ u.name }}{% if u.short_name %} <span class="muted">({{ u.short_name }})</span>{% endif %}</h3>
+  {% if u.city or u.country_code %}<p class="meta">{{ u.city }}{% if u.city and u.country_code %} · {% endif %}{{ u.country_code | upper }}</p>{% endif %}
+  {% if u.summary %}<p>{{ u.summary }}</p>{% endif %}
+  <span class="card-link">View chapter →</span>
+</a>
+{% endmacro %}
+
+{% macro event_card(e) %}
+<a class="card event-card" href="/events/{{ e.slug }}">
+  <span class="pill is-{{ e.state }}">{{ {"upcoming": "Coming up", "happening": "Happening now", "ended": "Held"}[e.state] }}</span>
+  <h3>{{ e.title }}</h3>
+  <p class="meta">{{ e.starts_on | date_range(e.ends_on) }}{% if e.location %} · {{ e.location }}{% endif %}</p>
+  {% if e.theme %}<p class="theme">“{{ e.theme }}”{% if e.scripture %} · {{ e.scripture }}{% endif %}</p>{% endif %}
+  <span class="card-link">{{ "See the recap →" if e.state == "ended" else "Details →" }}</span>
+</a>
+{% endmacro %}

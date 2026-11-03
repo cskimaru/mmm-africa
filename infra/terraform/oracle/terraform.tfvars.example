@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars (which git ignores) and fill in.
+compartment_ocid = "ocid1.tenancy.oc1..aaaa..."
+ssh_public_key   = "ssh-ed25519 AAAA... you@laptop"
+site_domain      = "mmmafrica.org"
+acme_email       = "you@example.com"
+# registry       = "ghcr.io/cskimaru/mmm-africa"

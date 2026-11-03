@@ -1,0 +1,19 @@
+# Local development / CI: plain HTTP on http://localhost:8080, no certificates.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  caddy:
+    ports: !override ["8080:80"]
+    environment:
+      SITE_ADDRESS: ":80"
+  web:
+    environment:
+      ENVIRONMENT: development
+      SITE_ORIGIN: http://localhost:8080
+      DIRECTORY_URL: http://directory:8000
+  auth:
+    environment:
+      ENVIRONMENT: development
+      SITE_ORIGIN: http://localhost:8080
+      COOKIE_SECURE: "false"
+  directory:
+    environment: { ENVIRONMENT: development, SITE_ORIGIN: "http://localhost:8080" }

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Officers · MMM Africa{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block body %}
+<section class="section"><div class="wrap console">
+  <h1>Officers' area</h1>
+
+  <form class="card form narrow" id="login-form" hidden novalidate>
+    <h2>Sign in</h2>
+    <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="l-password">Password</label><input id="l-password" type="password" autocomplete="current-password" required></div>
+    <div class="actions"><button class="btn" type="submit">Sign in</button><span class="err" id="l-err" role="alert"></span></div>
+    <p class="muted small">Accounts are created by invitation from the African Chapter secretariat.</p>
+  </form>
+
+  <div id="dash" hidden>
+    <div class="dash-top"><span>Signed in as <strong id="me-name"></strong> <span class="muted" id="me-roles"></span></span>
+      <button class="btn small ghost" id="logout" type="button">Sign out</button></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" type="button" data-tab="messages" aria-selected="true">Messages</button>
+      <button role="tab" type="button" data-tab="chapters">Chapters</button>
+      <button role="tab" type="button" data-tab="leaders">Leaders</button>
+      <button role="tab" type="button" data-tab="events">Events</button>
+      <button role="tab" type="button" data-tab="people" data-role="owner" hidden>Officer accounts</button>
+      <button role="tab" type="button" data-tab="account">My account</button>
+    </div>
+
+    <section data-panel="messages">
+      <div class="actions"><label class="check"><input type="checkbox" id="m-show-handled"> Show handled messages</label></div>
+      <div id="message-list" class="stack"></div>
+    </section>
+
+    <section data-panel="chapters" hidden>
+      <p class="muted">The family structure: MMM International, the African Chapter and its national chapters. Hidden chapters are only visible to officers.</p>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Level</th><th>Country</th><th>Status</th><th>Website</th><th></th></tr></thead><tbody id="units-body"></tbody></table></div>
+      <form class="card form" id="unit-form" novalidate>
+        <h2 id="unit-form-title">Add a national chapter</h2>
+        <input type="hidden" id="u-id">
+        <div class="row">
+          <div class="field"><label for="u-name">Name</label><input id="u-name" required maxlength="120" placeholder="MMM Uganda Chapter"></div>
+          <div class="field"><label for="u-short">Short name</label><input id="u-short" maxlength="30" placeholder="MMMU"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="u-slug">Web address</label><input id="u-slug" required maxlength="60" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="uganda"><small class="muted">Page will be /chapters/<em>this</em>. Lowercase letters, numbers and dashes.</small></div>
+          <div class="field"><label for="u-country">Country code</label><input id="u-country" maxlength="2" placeholder="ug"><small class="muted">Two letters; colours the country on the map.</small></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="u-city">City</label><input id="u-city" maxlength="80"></div>
+          <div class="field"><label for="u-status">Status</label><select id="u-status"><option value="established">Established</option><option value="forming">Forming</option></select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="u-website">Website</label><input id="u-website" type="url" maxlength="300" placeholder="https://"></div>
+          <div class="field"><label for="u-email">Public email</label><input id="u-email" type="email" maxlength="200"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="u-phone">Public phone</label><input id="u-phone" maxlength="40"></div>
+          <div class="field"><label for="u-position">Order</label><input id="u-position" type="number" value="100"></div>
+        </div>
+        <div class="field"><label for="u-summary">Summary</label><textarea id="u-summary" rows="3" maxlength="4000"></textarea></div>
+        <label class="check"><input type="checkbox" id="u-hidden"> Hidden from the public</label>
+        <div class="actions"><button class="btn" type="submit">Save</button><button class="btn ghost" type="button" id="unit-reset">Clear</button><span class="err" id="u-err" role="alert"></span></div>
+      </form>
+    </section>
+
+    <section data-panel="leaders" hidden>
+      <div class="field narrow"><label for="o-unit">Leaders of</label><select id="o-unit"></select></div>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Term</th><th>Order</th><th></th></tr></thead><tbody id="officers-body"></tbody></table></div>
+      <form class="card form" id="officer-form" novalidate>
+        <h2>Add a leader</h2>
+        <div class="row">
+          <div class="field"><label for="o-name">Name</label><input id="o-name" required maxlength="120"></div>
+          <div class="field"><label for="o-role">Role</label><input id="o-role" required maxlength="80" placeholder="Chairperson"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="o-term">Term</label><input id="o-term" maxlength="40" placeholder="2026–2028"></div>
+          <div class="field"><label for="o-position">Order</label><input id="o-position" type="number" value="100"></div>
+        </div>
+        <div class="field"><label for="o-email">Public email (optional)</label><input id="o-email" type="email" maxlength="200"></div>
+        <div class="actions"><button class="btn" type="submit">Add leader</button><span class="err" id="o-err" role="alert"></span></div>
+      </form>
+    </section>
+
+    <section data-panel="events" hidden>
+      <div class="table-wrap"><table><thead><tr><th>Title</th><th>Dates</th><th>Host</th><th>State</th><th></th></tr></thead><tbody id="events-body"></tbody></table></div>
+      <form class="card form" id="event-form" novalidate>
+        <h2 id="event-form-title">Add an event</h2>
+        <input type="hidden" id="e-id">
+        <div class="row">
+          <div class="field"><label for="e-title">Title</label><input id="e-title" required maxlength="160"></div>
+          <div class="field"><label for="e-slug">Web address</label><input id="e-slug" required maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="convention-2027"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="e-theme">Theme</label><input id="e-theme" maxlength="160"></div>
+          <div class="field"><label for="e-scripture">Scripture</label><input id="e-scripture" maxlength="60"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="e-start">Starts</label><input id="e-start" type="date" required></div>
+          <div class="field"><label for="e-end">Ends</label><input id="e-end" type="date" required></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="e-venue">Venue</label><input id="e-venue" maxlength="160"></div>
+          <div class="field"><label for="e-location">Town, country</label><input id="e-location" maxlength="160"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="e-host">Host chapter</label><select id="e-host"></select></div>
+          <div class="field"><label for="e-register">Registration link</label><input id="e-register" type="url" maxlength="300" placeholder="https://"></div>
+        </div>
+        <div class="field"><label for="e-summary">About the event</label><textarea id="e-summary" rows="3" maxlength="4000"></textarea></div>
+        <div class="field"><label for="e-recap">Thank-you message (shown after it ends)</label><textarea id="e-recap" rows="3" maxlength="4000"></textarea></div>
+        <label class="check"><input type="checkbox" id="e-hidden"> Hidden from the public</label>
+        <div class="actions"><button class="btn" type="submit">Save</button><button class="btn ghost" type="button" id="event-reset">Clear</button><span class="err" id="e-err" role="alert"></span></div>
+      </form>
+    </section>
+
+    <section data-panel="people" hidden>
+      <form class="card form" id="invite-form" novalidate>
+        <h2>Invite an officer</h2>
+        <div class="row">
+          <div class="field"><label for="i-email">Their email</label><input id="i-email" type="email" required></div>
+          <div class="field"><label for="i-name">Their name</label><input id="i-name" maxlength="120"></div>
+        </div>
+        <div class="field"><span class="label">What they can do</span>
+          <label class="check"><input type="checkbox" name="role" value="editor" checked> Update chapters, leaders, events and answer messages</label>
+          <label class="check"><input type="checkbox" name="role" value="owner"> Everything, including officer accounts</label>
+        </div>
+        <div class="actions"><button class="btn" type="submit">Create invitation link</button><span class="err" id="i-err" role="alert"></span></div>
+        <div class="copy-row" id="invite-result" hidden><input id="invite-url" readonly aria-label="Invitation link"><button class="btn small" type="button" id="copy-invite">Copy link</button></div>
+        <p class="muted small" id="invite-hint" hidden>Send this link privately, for example on WhatsApp. It works once and expires in 14 days.</p>
+      </form>
+      <h2>Accounts</h2>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Last sign-in</th><th></th></tr></thead><tbody id="users-body"></tbody></table></div>
+      <h2>Invitations</h2>
+      <div class="table-wrap"><table><thead><tr><th>Email</th><th>Roles</th><th>Status</th><th></th></tr></thead><tbody id="invites-body"></tbody></table></div>
+    </section>
+
+    <section data-panel="account" hidden>
+      <form class="card form narrow" id="password-form" novalidate>
+        <h2>Change your password</h2>
+        <div class="field"><label for="pw-current">Current password</label><input id="pw-current" type="password" autocomplete="current-password" required></div>
+        <div class="field"><label for="pw-new">New password (at least 10 characters)</label><input id="pw-new" type="password" autocomplete="new-password" required minlength="10"></div>
+        <div class="actions"><button class="btn" type="submit">Change password</button><span class="err" id="pw-err" role="alert"></span></div>
+      </form>
+    </section>
+  </div>
+</div></section>
+{% endblock %}
+{% block scripts %}<script src="/static/officers.js?v={{ asset_version }}" defer></script>{% endblock %}

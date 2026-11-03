@@ -1,0 +1,24 @@
+#cloud-config
+# First boot of a fresh Ubuntu server: install Docker with the same setup script used by hand,
+# then start the site in private preview. Works on any cloud that supports cloud-init.
+package_update: true
+packages: [git, make, curl]
+write_files:
+  - path: /opt/mmm-africa-bootstrap.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      cd "$HOME"
+      [ -d mmm-africa ] || git clone --depth 1 ${repo_url} mmm-africa
+      cd mmm-africa
+      ./scripts/setup-ubuntu-server.sh
+      [ -f .env ] || cp .env.example .env
+      sed -i "s|^SITE_DOMAIN=.*|SITE_DOMAIN=${site_domain}|; s|^ACME_EMAIL=.*|ACME_EMAIL=${acme_email}|; s|^SITE_PREVIEW=.*|SITE_PREVIEW=true|" .env
+      %{ if registry != "" }sed -i "s|^REGISTRY=.*|REGISTRY=${registry}|" .env%{ endif }
+      # The docker group was just added; sg runs the rest with it without logging out.
+      sg docker -c "make init && make build && make up"
+      echo "MMM Africa is starting at https://${site_domain} (private preview; password in secrets/preview_password)."
+runcmd:
+  - [sudo, -u, ${admin_user}, -H, bash, -lc, "/opt/mmm-africa-bootstrap.sh > /home/${admin_user}/bootstrap.log 2>&1"]

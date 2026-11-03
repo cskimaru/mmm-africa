@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Contact · MMM Africa{% endblock %}
+{% block body %}
+<section class="page-head"><div class="wrap">
+  <p class="eyebrow">Contact</p>
+  <h1>Get in touch with the African Chapter</h1>
+  <p>Questions about the African Chapter, starting a chapter, partnering or volunteering. For a national chapter's local programmes, contact that chapter directly.</p>
+</div></section>
+<section class="section"><div class="wrap narrow">
+  <form class="card form" id="contact-form" novalidate>
+    <div class="row">
+      <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" required maxlength="120" autocomplete="name"></div>
+      <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" required maxlength="200" autocomplete="email"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="c-country">Country</label><input id="c-country" name="country" maxlength="80" autocomplete="country-name"></div>
+      <div class="field"><label for="c-topic">About</label>
+        <select id="c-topic" name="topic">{% for key, label in topics.items() %}<option value="{{ key }}"{% if key == topic %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="field"><label for="c-body">Message</label><textarea id="c-body" name="body" required minlength="5" maxlength="4000" rows="6"></textarea></div>
+    <div class="field hp" aria-hidden="true"><label for="c-website">Leave this empty</label><input id="c-website" name="website" tabindex="-1" autocomplete="off"></div>
+    <div class="actions"><button class="btn" type="submit">Send message</button><span class="err" id="c-err" role="alert"></span></div>
+    <p class="ok" id="c-ok" role="status" hidden></p>
+  </form>
+</div></section>
+{% endblock %}
+{% block scripts %}<script src="/static/contact.js?v={{ asset_version }}" defer></script>{% endblock %}
