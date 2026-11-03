@@ -4,8 +4,8 @@
 {% block body %}
 <section class="page-head"><div class="wrap">
   <p class="eyebrow">National chapters</p>
-  <h1>Chapters across Africa</h1>
-  <p>Each national chapter leads ministry in its own country, with its own officers and accounts, as part of the African Chapter.</p>
+  <h1>{{ text("chapters.title") }}</h1>
+  {{ text("chapters.intro") | paragraphs }}
 </div></section>
 
 <section class="section"><div class="wrap grid grid-2 center">
@@ -18,13 +18,13 @@
 <section class="section alt" id="start"><div class="wrap">
   <div class="section-head">
     <p class="eyebrow">Start a chapter</p>
-    <h2>Bring MMM to your country</h2>
-    <p>New chapters usually grow from a small group of committed health workers and church members.</p>
+    <h2>{{ text("chapters.start_title") }}</h2>
+    {{ text("chapters.start_intro") | paragraphs }}
   </div>
   <div class="grid grid-3">
-    <div class="card"><div class="icon step" aria-hidden="true">1</div><h3>Reach out</h3><p>Tell us where you are and who is with you. We will connect you with the African Chapter leadership.</p></div>
-    <div class="card"><div class="icon step" aria-hidden="true">2</div><h3>Gather a team</h3><p>Form a core group, agree on leadership roles and begin meeting for prayer and planning.</p></div>
-    <div class="card"><div class="icon step" aria-hidden="true">3</div><h3>Join the family</h3><p>Be recognised as a national chapter, send delegates to the Annual Convention and begin outreach.</p></div>
+    {% for n in (1, 2, 3) %}
+    <div class="card"><div class="icon step" aria-hidden="true">{{ n }}</div><h3>{{ text("chapters.step%d_title" % n) }}</h3>{{ text("chapters.step%d_text" % n) | paragraphs }}</div>
+    {% endfor %}
   </div>
   <p class="center-text"><a class="btn" href="/contact?topic=start_chapter">Contact us about a chapter</a></p>
 </div></section>

@@ -3,8 +3,8 @@
 {% block body %}
 <section class="page-head"><div class="wrap">
   <p class="eyebrow">Contact</p>
-  <h1>Get in touch with the African Chapter</h1>
-  <p>Questions about the African Chapter, starting a chapter, partnering or volunteering. For a national chapter's local programmes, contact that chapter directly.</p>
+  <h1>{{ text("contact.title") }}</h1>
+  {{ text("contact.intro") | paragraphs }}
 </div></section>
 <section class="section"><div class="wrap narrow">
   <form class="card form" id="contact-form" novalidate>

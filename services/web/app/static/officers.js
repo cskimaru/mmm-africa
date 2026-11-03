@@ -19,7 +19,7 @@
     $("me-roles").textContent = "(" + user.roles.map((r) => ROLE_NAMES[r] || r).join(", ") + ")";
     document.querySelectorAll("[data-role]").forEach((b) => { b.hidden = !hasRole(user, b.dataset.role); });
     const wanted = location.hash.replace("#", "");
-    const tab = document.querySelector(`[data-tab="${wanted}"]:not([hidden])`) || document.querySelector("[data-tab=messages]");
+    const tab = document.querySelector(`[data-tab="${wanted}"]:not([hidden])`) || document.querySelector("[data-tab=text]");
     select(tab.dataset.tab);
   }
 
@@ -29,7 +29,7 @@
     document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
     document.querySelectorAll("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== name; });
     history.replaceState(null, "", "#" + name);
-    ({ messages: loadMessages, chapters: loadUnits, leaders: loadLeaders, events: loadEvents, people: loadPeople, account: () => {} })[name]();
+    ({ text: loadText, pages: loadPages, messages: loadMessages, chapters: loadUnits, leaders: loadLeaders, events: loadEvents, people: loadPeople, account: () => {} })[name]();
   }
 
   // ---- Sign in / out ----
@@ -40,6 +40,81 @@
     catch (e) { $("l-err").textContent = e.message; }
   });
   $("logout").addEventListener("click", async () => { try { await api("POST", "/api/auth/logout"); } catch (e) { /* ignore */ } location.href = "/"; });
+
+  // ---- Website text ----
+  const textFields = () => [...document.querySelectorAll("#text-form [data-key]")];
+  let savedText = {};
+  function markChanged(el) {
+    const flag = document.querySelector(`[data-changed-for="${CSS.escape(el.dataset.key)}"]`);
+    if (flag) flag.hidden = el.value === el.dataset.default;
+  }
+  async function loadText() {
+    try {
+      savedText = (await api("GET", `${D}/content`)).values;
+      textFields().forEach((el) => {
+        el.value = savedText[el.dataset.key] !== undefined ? savedText[el.dataset.key] : el.dataset.default;
+        markChanged(el);
+      });
+    } catch (e) { $("t-err").textContent = e.message; }
+  }
+  textFields().forEach((el) => el.addEventListener("input", () => markChanged(el)));
+  $("text-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    $("t-err").textContent = "";
+    const values = {};
+    textFields().forEach((el) => {
+      const key = el.dataset.key;
+      const value = el.value.trim() === "" || el.value === el.dataset.default ? "" : el.value;
+      if (value !== (savedText[key] || "")) values[key] = value;
+    });
+    if (!Object.keys(values).length) { toast("Nothing has changed"); return; }
+    try {
+      savedText = (await api("PUT", `${D}/content`, { values })).values;
+      textFields().forEach((el) => { if (el.value.trim() === "") el.value = el.dataset.default; markChanged(el); });
+      toast("Saved. The website shows the new text within a minute.");
+    } catch (e) { $("t-err").textContent = e.message; }
+  });
+
+  // ---- Pages ----
+  async function loadPages() {
+    try {
+      const rows = await api("GET", `${D}/pages`);
+      $("pages-body").replaceChildren(...(rows.length ? rows.map((p) => {
+        const del = h("button", { class: "btn link danger", type: "button" }, "Delete");
+        confirmClick(del, "Confirm delete", async () => { try { await api("DELETE", `${D}/pages/${p.id}`); toast("Page deleted"); loadPages(); } catch (e) { toast(e.message); } });
+        return h("tr", null,
+          h("td", null, p.title, p.hidden ? h("span", { class: "muted" }, " (hidden)") : null),
+          h("td", null, h("a", { href: `/pages/${p.slug}`, target: "_blank", rel: "noopener" }, `/pages/${p.slug}`)),
+          h("td", null, p.in_menu ? "Yes" : "No"),
+          h("td", null, h("button", { class: "btn link", type: "button", onclick: () => editPage(p) }, "Edit"), " ", del));
+      }) : [h("tr", null, h("td", { colspan: "4", class: "muted" }, "No pages yet. Add the first one below."))]));
+    } catch (e) { toast(e.message); }
+  }
+  function resetPageForm() { $("page-form").reset(); $("p-id").value = ""; $("p-position").value = "100"; $("p-err").textContent = ""; $("page-form-title").textContent = "Add a page"; }
+  function editPage(p) {
+    $("p-id").value = p.id; $("p-title").value = p.title; $("p-slug").value = p.slug; $("p-summary").value = p.summary;
+    $("p-body").value = p.body; $("p-position").value = p.position; $("p-menu").checked = p.in_menu; $("p-hidden").checked = p.hidden;
+    $("page-form-title").textContent = "Edit " + p.title;
+    $("page-form").scrollIntoView({ behavior: "smooth" });
+  }
+  $("page-reset").addEventListener("click", resetPageForm);
+  $("p-title").addEventListener("input", () => {
+    if ($("p-id").value) return;
+    $("p-slug").value = $("p-title").value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  });
+  $("page-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    $("p-err").textContent = "";
+    const body = {
+      title: $("p-title").value.trim(), slug: $("p-slug").value.trim().toLowerCase(), summary: $("p-summary").value.trim(),
+      body: $("p-body").value, position: Number($("p-position").value || 100), in_menu: $("p-menu").checked, hidden: $("p-hidden").checked,
+    };
+    try {
+      const id = $("p-id").value;
+      await api(id ? "PATCH" : "POST", id ? `${D}/pages/${id}` : `${D}/pages`, body);
+      toast("Page saved"); resetPageForm(); loadPages();
+    } catch (e) { $("p-err").textContent = e.message; }
+  });
 
   // ---- Messages ----
   $("m-show-handled").addEventListener("change", loadMessages);

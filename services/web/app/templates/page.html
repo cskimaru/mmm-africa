@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} · MMM Africa{% endblock %}
+{% block description %}{{ page.summary or page.title }}{% endblock %}
+{% block body %}
+<section class="page-head"><div class="wrap">
+  {% if page.hidden %}<p class="eyebrow">Hidden: only officers can see this page</p>{% endif %}
+  <h1>{{ page.title }}</h1>
+  {% if page.summary %}<p>{{ page.summary }}</p>{% endif %}
+</div></section>
+<section class="section"><div class="wrap narrow">
+  <article class="prose page-body">{{ page.body | rich }}</article>
+</div></section>
+{% endblock %}

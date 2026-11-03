@@ -3,16 +3,14 @@
 The website of the MMM African Chapter. It presents the chapter, its national chapters, its leaders and its
 shared events, and gives officers a private area to keep all of that up to date and answer messages.
 
-MMM is organised like the Seventh-day Adventist Church:
+| MMM level | Website |
+|---|---|
+| MMM International | medicalmissionarymovement.org |
+| **MMM African Chapter** | **this repository** |
+| National chapters, e.g. MMM Kenya Chapter (MMMK) | their own sites, e.g. mmmkenya.org |
 
-| MMM level | Church equivalent | Website |
-|---|---|---|
-| MMM International | General Conference | medicalmissionarymovement.org |
-| **MMM African Chapter** | Division | **this repository** |
-| National chapters, e.g. MMM Kenya Chapter (MMMK) | Union / Conference | their own sites, e.g. mmmkenya.org |
-
-Each level keeps its own leadership and finances. This site stores **no financial data**: only the family
-structure, leaders, shared events and contact messages.
+This site stores **no financial data**: only the chapters, leaders, shared events, website text, pages and
+contact messages.
 
 ## What's in the box
 
@@ -20,7 +18,7 @@ structure, leaders, shared events and contact messages.
 |---|---|
 | `services/web` | Renders every page on the server (fast on phones, good link previews), the officers' area and invitation sign-up |
 | `services/auth` | Officer accounts by invitation, sign-in with lockout, rotating sessions, roles (owner, editor) |
-| `services/directory` | The family structure (international, continental, national), leaders, events and contact messages |
+| `services/directory` | The family structure (international, continental, national), leaders, events, contact messages, editable website text and officer-written pages |
 | `libs/common` | Shared config, logging, auth checks, rate limiting, health and metrics |
 | `deploy/` | Caddy gateway (HTTPS), Postgres, encrypted backups, Prometheus, Alertmanager, Grafana |
 | `infra/terraform` | Creates the server (Oracle Cloud free tier) and, optionally, the DNS record (Cloudflare) |
@@ -57,8 +55,8 @@ https://mmmafrica.nabec.co.ke: see [docs/share-from-your-computer.md](docs/share
   `make init`, set `SITE_DOMAIN` and `ACME_EMAIL` in `.env`, `make init` again, `make up`, then
   `make create-owner email=... name=...`.
 
-New sites start in **private preview** (password-protected). See
-[docs/runbook.md](docs/runbook.md#private-preview-then-launch) for launching.
+Leaders edit everything visitors read (text, colour scheme, pages, chapters, leaders, events) from the
+officers' area at `/officers`. See [docs/share-from-your-computer.md](docs/share-from-your-computer.md#editing-the-website).
 
 After that, deployments go through GitHub Actions: see [docs/runbook.md](docs/runbook.md#deploying-a-new-version).
 

@@ -13,6 +13,7 @@ from mmm_common.security import ACCESS_COOKIE
 
 from .config import get_settings
 from .content import ContentClient
+from .site_text import GROUPS, PALETTE_CHOICES, SiteText, paragraphs, rich
 
 HERE = Path(__file__).parent
 settings = get_settings()
@@ -28,13 +29,8 @@ app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 
 AFRICA_MAP = json.loads((HERE / "africa_map.json").read_text())
-# (key, name shown to reviewers). Each has a painted background in static/art/<key>.webp.
-PALETTES = [
-    ("sunrise", "Savanna sunrise"),
-    ("coast", "Coast"),
-    ("highlands", "Highlands"),
-    ("evening", "Evening"),
-]
+# (key, name). Each has a painted background in static/art/<key>.webp.
+PALETTES = PALETTE_CHOICES
 TOPICS = {
     "general": "General question",
     "start_chapter": "Starting a chapter in my country",
@@ -75,14 +71,13 @@ def static_fingerprint(root: Path) -> str:
 
 templates.env.filters["date_range"] = date_range
 templates.env.filters["initials"] = initials
+templates.env.filters["paragraphs"] = paragraphs
+templates.env.filters["rich"] = rich
 templates.env.globals.update(
     asset_version=settings.asset_version or static_fingerprint(HERE / "static"),
     site_origin=settings.site_origin,
     site_preview=settings.site_preview,
     palettes=PALETTES,
-    palette=settings.site_palette if settings.site_palette in dict(PALETTES) else "sunrise",
-    contact_email=settings.contact_email,
-    contact_phone=settings.contact_phone,
     map_source=AFRICA_MAP["source"],
     year=date.today().year,
 )
@@ -100,17 +95,47 @@ async def fetch(request: Request, path: str):
     return await request.app.state.content.get(path, auth_headers(request))
 
 
-def render(request: Request, name: str, ctx: dict, status: int = 200) -> HTMLResponse:
-    headers = NO_STORE if auth_headers(request) else PUBLIC
-    return templates.TemplateResponse(request, name, ctx, status_code=status, headers=headers)
+async def site_context(request: Request) -> dict:
+    """What every page needs: the officers' website text, colour scheme, contact details and menu pages."""
+    content = await fetch(request, "/api/directory/content")
+    pages = await fetch(request, "/api/directory/pages")
+    text = SiteText(content.data["values"] if content.ok else {})
+    palette = text("site.palette")
+    if palette not in dict(PALETTES):
+        palette = settings.site_palette if settings.site_palette in dict(PALETTES) else "sunrise"
+    return {
+        "text": text,
+        "palette": palette,
+        "contact_email": text("contact.email") or settings.contact_email,
+        "contact_phone": text("contact.phone") or settings.contact_phone,
+        "nav_items": [
+            ("home", "/", "Home"),
+            ("about", "/about", "About"),
+            ("chapters", "/chapters", "Chapters"),
+            ("leadership", "/leadership", "Leadership"),
+            ("events", "/events", "Events"),
+            *[
+                ("page-" + p["slug"], "/pages/" + p["slug"], p["title"])
+                for p in (pages.data if pages.ok else [])
+                if p["in_menu"] and not p["hidden"]
+            ],
+            ("contact", "/contact", "Contact"),
+        ],
+    }
 
 
-def not_found(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "404.html", {"nav": ""}, status_code=404, headers=NO_STORE)
+async def render(request: Request, name: str, ctx: dict, status: int = 200, cache: bool = True) -> HTMLResponse:
+    headers = NO_STORE if (auth_headers(request) or not cache) else PUBLIC
+    full = {**await site_context(request), **ctx}
+    return templates.TemplateResponse(request, name, full, status_code=status, headers=headers)
 
 
-def unavailable(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "503.html", {"nav": ""}, status_code=503, headers=NO_STORE)
+async def not_found(request: Request) -> HTMLResponse:
+    return await render(request, "404.html", {"nav": ""}, status=404, cache=False)
+
+
+async def unavailable(request: Request) -> HTMLResponse:
+    return await render(request, "503.html", {"nav": ""}, status=503, cache=False)
 
 
 def empty_structure() -> dict:
@@ -141,7 +166,7 @@ async def home(request: Request) -> HTMLResponse:
     ev = await fetch(request, "/api/directory/events")
     structure = st.data if st.ok else empty_structure()
     upcoming, past = split_events(ev.data if ev.ok else [])
-    return render(
+    return await render(
         request,
         "index.html",
         {
@@ -159,14 +184,16 @@ async def home(request: Request) -> HTMLResponse:
 async def about(request: Request) -> HTMLResponse:
     st = await fetch(request, "/api/directory/structure")
     structure = st.data if st.ok else empty_structure()
-    return render(request, "about.html", {"nav": "about", "structure": structure, "degraded": st.degraded or not st.ok})
+    return await render(
+        request, "about.html", {"nav": "about", "structure": structure, "degraded": st.degraded or not st.ok}
+    )
 
 
 @app.get("/chapters", response_class=HTMLResponse)
 async def chapters(request: Request) -> HTMLResponse:
     st = await fetch(request, "/api/directory/structure")
     structure = st.data if st.ok else empty_structure()
-    return render(
+    return await render(
         request,
         "chapters.html",
         {
@@ -183,27 +210,27 @@ async def chapters(request: Request) -> HTMLResponse:
 async def chapter(request: Request, slug: str) -> HTMLResponse:
     res = await fetch(request, f"/api/directory/units/{slug}")
     if res.status == 404 or (res.ok and res.data["level"] != "national"):
-        return not_found(request)
+        return await not_found(request)
     if not res.ok:
-        return unavailable(request)
+        return await unavailable(request)
     ev = await fetch(request, "/api/directory/events")
     hosted = [e for e in (ev.data if ev.ok else []) if e.get("host_unit_id") == res.data["id"]]
-    return render(request, "chapter.html", {"nav": "chapters", "unit": res.data, "events": hosted})
+    return await render(request, "chapter.html", {"nav": "chapters", "unit": res.data, "events": hosted})
 
 
 @app.get("/leadership", response_class=HTMLResponse)
 async def leadership(request: Request) -> HTMLResponse:
     res = await fetch(request, "/api/directory/units/africa")
     if not res.ok:
-        return unavailable(request)
-    return render(request, "leadership.html", {"nav": "leadership", "unit": res.data})
+        return await unavailable(request)
+    return await render(request, "leadership.html", {"nav": "leadership", "unit": res.data})
 
 
 @app.get("/events", response_class=HTMLResponse)
 async def events(request: Request) -> HTMLResponse:
     ev = await fetch(request, "/api/directory/events")
     upcoming, past = split_events(ev.data if ev.ok else [])
-    return render(
+    return await render(
         request,
         "events.html",
         {"nav": "events", "upcoming": upcoming, "past": past, "degraded": ev.degraded or not ev.ok},
@@ -214,18 +241,28 @@ async def events(request: Request) -> HTMLResponse:
 async def event(request: Request, slug: str) -> HTMLResponse:
     res = await fetch(request, f"/api/directory/events/{slug}")
     if res.status == 404:
-        return not_found(request)
+        return await not_found(request)
     if not res.ok:
-        return unavailable(request)
-    return render(request, "event.html", {"nav": "events", "event": res.data})
+        return await unavailable(request)
+    return await render(request, "event.html", {"nav": "events", "event": res.data})
 
 
 @app.get("/contact", response_class=HTMLResponse)
 async def contact(request: Request) -> HTMLResponse:
     topic = request.query_params.get("topic", "general")
-    return render(
+    return await render(
         request, "contact.html", {"nav": "contact", "topics": TOPICS, "topic": topic if topic in TOPICS else "general"}
     )
+
+
+@app.get("/pages/{slug}", response_class=HTMLResponse)
+async def page(request: Request, slug: str) -> HTMLResponse:
+    res = await fetch(request, f"/api/directory/pages/{slug}")
+    if res.status == 404:
+        return await not_found(request)
+    if not res.ok:
+        return await unavailable(request)
+    return await render(request, "page.html", {"nav": "page-" + slug, "page": res.data})
 
 
 # ---- Officers ----
@@ -233,12 +270,12 @@ async def contact(request: Request) -> HTMLResponse:
 
 @app.get("/officers", response_class=HTMLResponse)
 async def officers(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "officers.html", {"nav": ""}, headers=NO_STORE)
+    return await render(request, "officers.html", {"nav": "", "groups": GROUPS}, cache=False)
 
 
 @app.get("/invite", response_class=HTMLResponse)
 async def invite(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "invite.html", {"nav": ""}, headers=NO_STORE)
+    return await render(request, "invite.html", {"nav": ""}, cache=False)
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)

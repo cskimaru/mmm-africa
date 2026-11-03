@@ -122,3 +122,39 @@ async def test_contact_messages_are_rate_limited(client):
     msg = {"name": "Grace", "email": "grace@example.com", "body": "Hello there, friends."}
     codes = [(await client.post("/api/directory/messages", json=msg)).status_code for _ in range(6)]
     assert codes[:5] == [202] * 5 and codes[5] == 429
+
+
+async def test_website_text_is_saved_and_cleared(client):
+    assert (await client.get("/api/directory/content")).json() == {"values": {}}
+    assert (await client.put("/api/directory/content", json={"values": {"home.hero_title": "Hi"}})).status_code == 401
+    r = await client.put(
+        "/api/directory/content",
+        json={"values": {"home.hero_title": "Healing Africa", "site.palette": "coast"}},
+        headers=EDITOR,
+    )
+    assert r.status_code == 200
+    assert r.json()["values"] == {"home.hero_title": "Healing Africa", "site.palette": "coast"}
+    # An empty value puts the text back to the website's default.
+    r = await client.put("/api/directory/content", json={"values": {"home.hero_title": ""}}, headers=EDITOR)
+    assert r.json()["values"] == {"site.palette": "coast"}
+    bad = await client.put("/api/directory/content", json={"values": {"Bad Key!": "x"}}, headers=EDITOR)
+    assert bad.status_code == 422
+
+
+async def test_officer_pages(client):
+    page = {"slug": "news", "title": "News", "body": "First line.\n\nSecond paragraph.", "in_menu": True}
+    assert (await client.post("/api/directory/pages", json=page)).status_code == 401
+    r = await client.post("/api/directory/pages", json=page, headers=EDITOR)
+    assert r.status_code == 201
+    pid = r.json()["id"]
+    assert (await client.get("/api/directory/pages/news")).json()["title"] == "News"
+    # Built-in addresses are refused, and the same address twice too.
+    assert (
+        await client.post("/api/directory/pages", json={**page, "slug": "about"}, headers=EDITOR)
+    ).status_code == 422
+    assert (await client.post("/api/directory/pages", json=page, headers=EDITOR)).status_code == 409
+    await client.patch(f"/api/directory/pages/{pid}", json={"hidden": True}, headers=EDITOR)
+    assert (await client.get("/api/directory/pages/news")).status_code == 404
+    assert [x["slug"] for x in (await client.get("/api/directory/pages")).json()] == []
+    assert [x["slug"] for x in (await client.get("/api/directory/pages", headers=EDITOR)).json()] == ["news"]
+    assert (await client.delete(f"/api/directory/pages/{pid}", headers=EDITOR)).status_code == 204

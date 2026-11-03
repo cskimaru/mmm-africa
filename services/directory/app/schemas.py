@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from typing import Literal
 
@@ -229,3 +230,79 @@ class MessageOut(_Out):
     body: str
     created_at: datetime
     handled_at: datetime | None
+
+
+# ---- Website text and options ----
+
+KEY = r"^[a-z0-9_]+(\.[a-z0-9_]+)*$"
+
+
+class ContentOut(BaseModel):
+    values: dict[str, str]
+
+
+class ContentIn(BaseModel):
+    """Changed keys only. An empty string puts that text back to the built-in default."""
+
+    values: dict[str, str] = Field(max_length=200)
+
+    @field_validator("values")
+    @classmethod
+    def _check(cls, v: dict[str, str]) -> dict[str, str]:
+        for k, val in v.items():
+            if len(k) > 80 or not re.match(KEY, k):
+                raise ValueError(f"Unknown text name: {k[:40]}")
+            if len(val) > 8000:
+                raise ValueError("Each piece of text can be at most 8000 characters.")
+        return v
+
+
+# ---- Officer-written pages ----
+
+RESERVED_SLUGS = {"about", "chapters", "leadership", "events", "contact", "officers", "invite", "static", "api"}
+
+
+class PageIn(BaseModel):
+    slug: str = Field(min_length=2, max_length=60, pattern=SLUG)
+    title: str = Field(min_length=2, max_length=120)
+    summary: str = Field("", max_length=300)
+    body: str = Field("", max_length=50000)
+    in_menu: bool = False
+    position: int = 100
+    hidden: bool = False
+
+    @field_validator("slug")
+    @classmethod
+    def _free(cls, v: str) -> str:
+        if v in RESERVED_SLUGS:
+            raise ValueError("That web address is used by a built-in page. Choose another.")
+        return v
+
+
+class PagePatch(BaseModel):
+    slug: str | None = Field(None, min_length=2, max_length=60, pattern=SLUG)
+    title: str | None = Field(None, min_length=2, max_length=120)
+    summary: str | None = Field(None, max_length=300)
+    body: str | None = Field(None, max_length=50000)
+    in_menu: bool | None = None
+    position: int | None = None
+    hidden: bool | None = None
+
+    @field_validator("slug")
+    @classmethod
+    def _free(cls, v: str | None) -> str | None:
+        if v in RESERVED_SLUGS:
+            raise ValueError("That web address is used by a built-in page. Choose another.")
+        return v
+
+
+class PageOut(_Out):
+    id: str
+    slug: str
+    title: str
+    summary: str
+    body: str
+    in_menu: bool
+    position: int
+    hidden: bool
+    updated_at: datetime

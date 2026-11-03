@@ -3,8 +3,8 @@
 {% block body %}
 <section class="page-head"><div class="wrap">
   <p class="eyebrow">Leadership</p>
-  <h1>African Chapter leadership</h1>
-  <p>The continental officers who coordinate the African Chapter. National chapters elect their own leaders.</p>
+  <h1>{{ text("leadership.title") }}</h1>
+  {{ text("leadership.intro") | paragraphs }}
 </div></section>
 <section class="section"><div class="wrap">
   {% if unit.officers %}
@@ -14,7 +14,7 @@
     {% endfor %}
   </div>
   {% else %}
-  <p class="empty-state">The African Chapter's leadership team will be listed here soon.</p>
+  <p class="empty-state">{{ text("leadership.empty") }}</p>
   {% endif %}
 </div></section>
 {% endblock %}

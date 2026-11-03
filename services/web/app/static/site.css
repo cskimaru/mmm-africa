@@ -323,3 +323,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--c1);box-
 /* Hero text sits on a soft glass panel so the painted trees never cross the words */
 .hero-text{background:color-mix(in srgb,var(--paper) 72%,transparent);border:1px solid var(--card-line);border-radius:var(--r-lg);
   padding:2rem clamp(1.2rem,3vw,2.4rem);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow)}
+
+/* ---------- Officer-written pages ---------- */
+.page-body h2{margin-top:1.4em;font-size:1.6rem}
+.page-body h2:first-child{margin-top:0}
+.page-body ul{padding-left:1.3rem;margin:0 0 1em}
+.page-body li{margin-bottom:.35em}
+.lead p{color:inherit}
+
+/* ---------- Officers: website text editor ---------- */
+.text-group{margin-bottom:1.2rem}
+.text-group>summary{cursor:pointer;font-family:var(--display);font-size:1.25rem;font-weight:600;padding:.9rem 1.1rem;background:var(--card-solid);
+  border:1px solid var(--card-line);border-radius:var(--r-md);list-style:none}
+.text-group>summary::-webkit-details-marker{display:none}
+.text-group>summary::after{content:"＋";float:right;color:var(--c1)}
+.text-group[open]>summary::after{content:"−"}
+.text-group[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.text-group .fields{background:var(--card-solid);border:1px solid var(--card-line);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);padding:1.2rem 1.1rem .4rem}
+.field .changed{font-size:.72rem;font-weight:800;color:var(--c2);text-transform:uppercase;letter-spacing:.08em;margin-left:.4rem}
+.save-bar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;
+  background:var(--card-solid);border:1px solid var(--card-line);border-radius:999px;padding:.6rem .8rem .6rem 1.2rem;box-shadow:var(--shadow-hover);margin-top:1rem}
+.help{font-size:.88rem;color:var(--muted)}

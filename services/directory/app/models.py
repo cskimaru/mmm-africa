@@ -1,14 +1,7 @@
-"""The MMM family structure, its leaders, shared events and contact messages.
+"""The MMM family structure, its leaders, shared events, contact messages and website content.
 
-The structure follows the Seventh-day Adventist pattern:
-
-    international  ~ General Conference   (MMM International)
-    continental    ~ Division             (MMM African Chapter: this site)
-    national       ~ Union / Conference   (e.g. MMM Kenya Chapter, MMMK)
-
-Each unit keeps its own leadership and its own finances. This service stores
-no financial data at all: only who the units are, who leads them, and the
-activities they share.
+Three levels: international (MMM International), continental (the MMM African Chapter, this site) and
+national (e.g. MMM Kenya Chapter, MMMK). This service stores no financial data.
 """
 
 from datetime import date, datetime
@@ -94,3 +87,31 @@ class AuditLog(IdMixin, Base):
     actor_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
     action: Mapped[str] = mapped_column(String(64))
     target: Mapped[str] = mapped_column(String(64), default="")
+
+
+class Setting(Base):
+    """One piece of editable website text or a site option, by key (e.g. "home.hero_title").
+
+    The web service holds the default for every key; a row here replaces that default.
+    """
+
+    __tablename__ = "settings"
+
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    value: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    updated_by: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
+
+class Page(IdMixin, TimestampMixin, Base):
+    """A page the officers write themselves, e.g. News, Programmes or Give."""
+
+    __tablename__ = "pages"
+
+    slug: Mapped[str] = mapped_column(String(60), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(120))
+    summary: Mapped[str] = mapped_column(String(300), default="")
+    body: Mapped[str] = mapped_column(Text, default="")
+    in_menu: Mapped[bool] = mapped_column(Boolean, default=False)
+    position: Mapped[int] = mapped_column(Integer, default=100)
+    hidden: Mapped[bool] = mapped_column(Boolean, default=False)

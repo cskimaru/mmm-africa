@@ -9,8 +9,10 @@ from mmm_common.db import utcnow
 from mmm_common.ratelimit import client_ip, hash_value, rate_limit
 from mmm_common.security import ROLE_EDITOR, Principal, optional_principal, require_roles
 
-from .models import AuditLog, Event, Message, Officer, Unit
+from .models import AuditLog, Event, Message, Officer, Page, Setting, Unit
 from .schemas import (
+    ContentIn,
+    ContentOut,
     EventIn,
     EventOut,
     EventPatch,
@@ -19,6 +21,9 @@ from .schemas import (
     OfficerIn,
     OfficerOut,
     OfficerPatch,
+    PageIn,
+    PageOut,
+    PagePatch,
     StructureOut,
     UnitDetailOut,
     UnitIn,
@@ -330,3 +335,89 @@ async def mark_handled(
     audit(s, p.user_id, "message.handled", m.id)
     await s.commit()
     return MessageOut.model_validate(m)
+
+
+# ---- Website text and options ----
+
+
+@router.get("/content", response_model=ContentOut)
+async def get_content(s: AsyncSession = Depends(session_dep)) -> ContentOut:
+    """Text the officers have changed. Anything not listed uses the website's built-in default."""
+    rows = (await s.execute(select(Setting))).scalars()
+    return ContentOut(values={r.key: r.value for r in rows})
+
+
+@router.put("/content", response_model=ContentOut)
+async def save_content(
+    body: ContentIn, p: Principal = Depends(editor), s: AsyncSession = Depends(session_dep)
+) -> ContentOut:
+    for key, value in body.values.items():
+        row = await s.get(Setting, key)
+        if value.strip() == "":
+            if row is not None:
+                await s.delete(row)
+        elif row is None:
+            s.add(Setting(key=key, value=value, updated_by=p.user_id))
+        else:
+            row.value = value
+            row.updated_by = p.user_id
+    if body.values:
+        audit(s, p.user_id, "content.save", ",".join(sorted(body.values))[:64])
+    await s.commit()
+    return await get_content(s)
+
+
+# ---- Officer-written pages ----
+
+
+@router.get("/pages", response_model=list[PageOut])
+async def list_pages(
+    p: Principal | None = Depends(optional_principal), s: AsyncSession = Depends(session_dep)
+) -> list[PageOut]:
+    q = select(Page).order_by(Page.position, Page.title)
+    if not is_editor(p):
+        q = q.where(Page.hidden.is_(False))
+    return [PageOut.model_validate(x) for x in (await s.execute(q)).scalars()]
+
+
+@router.get("/pages/{slug}", response_model=PageOut)
+async def get_page(
+    slug: str, p: Principal | None = Depends(optional_principal), s: AsyncSession = Depends(session_dep)
+) -> PageOut:
+    page = (await s.execute(select(Page).where(Page.slug == slug))).scalar_one_or_none()
+    if page is None or (page.hidden and not is_editor(p)):
+        raise HTTPException(404, "Not found.")
+    return PageOut.model_validate(page)
+
+
+@router.post("/pages", response_model=PageOut, status_code=201)
+async def create_page(body: PageIn, p: Principal = Depends(editor), s: AsyncSession = Depends(session_dep)) -> PageOut:
+    page = Page(**body.model_dump())
+    s.add(page)
+    audit(s, p.user_id, "page.create", body.slug)
+    await commit_or_conflict(s, "page")
+    return PageOut.model_validate(page)
+
+
+@router.patch("/pages/{page_id}", response_model=PageOut)
+async def update_page(
+    page_id: str, body: PagePatch, p: Principal = Depends(editor), s: AsyncSession = Depends(session_dep)
+) -> PageOut:
+    page = await s.get(Page, page_id)
+    if page is None:
+        raise HTTPException(404, "Not found.")
+    for k, v in body.model_dump(exclude_unset=True, exclude_none=True).items():
+        setattr(page, k, v)
+    audit(s, p.user_id, "page.update", page.id)
+    await commit_or_conflict(s, "page")
+    return PageOut.model_validate(page)
+
+
+@router.delete("/pages/{page_id}", status_code=204)
+async def delete_page(page_id: str, p: Principal = Depends(editor), s: AsyncSession = Depends(session_dep)) -> Response:
+    page = await s.get(Page, page_id)
+    if page is not None:
+        await s.delete(page)
+        audit(s, p.user_id, "page.delete", page_id)
+        await s.commit()
+    return Response(status_code=204)

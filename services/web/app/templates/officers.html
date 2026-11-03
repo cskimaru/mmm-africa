@@ -17,15 +17,71 @@
     <div class="dash-top"><span>Signed in as <strong id="me-name"></strong> <span class="muted" id="me-roles"></span></span>
       <button class="btn small ghost" id="logout" type="button">Sign out</button></div>
     <div class="tabs" role="tablist">
-      <button role="tab" type="button" data-tab="messages" aria-selected="true">Messages</button>
+      <button role="tab" type="button" data-tab="text" aria-selected="true">Website text</button>
+      <button role="tab" type="button" data-tab="pages">Pages</button>
       <button role="tab" type="button" data-tab="chapters">Chapters</button>
       <button role="tab" type="button" data-tab="leaders">Leaders</button>
       <button role="tab" type="button" data-tab="events">Events</button>
+      <button role="tab" type="button" data-tab="messages">Messages</button>
       <button role="tab" type="button" data-tab="people" data-role="owner" hidden>Officer accounts</button>
       <button role="tab" type="button" data-tab="account">My account</button>
     </div>
 
-    <section data-panel="messages">
+    <section data-panel="text">
+      <p class="help">Change any heading or paragraph on the website, and the colour scheme. Leave a blank line between
+        paragraphs. To add a link, write <code>[words to click](https://address)</code>. Empty a box to go back to the
+        original text. Visitors see changes within a minute of saving.</p>
+      <form id="text-form" novalidate>
+        {% for g in groups %}
+        <details class="text-group"{% if loop.first %} open{% endif %}>
+          <summary>{{ g.title }}</summary>
+          <div class="fields">
+            {% for fld in g.fields %}
+            <div class="field">
+              <label for="t-{{ fld.key }}">{{ fld.label }}<span class="changed" data-changed-for="{{ fld.key }}" hidden>Changed</span></label>
+              {% if fld.kind == "choice" %}
+              <select id="t-{{ fld.key }}" data-key="{{ fld.key }}" data-default="{{ fld.default }}">
+                {% for value, name in fld.choices %}<option value="{{ value }}">{{ name }}</option>{% endfor %}
+              </select>
+              {% elif fld.kind == "text" %}
+              <textarea id="t-{{ fld.key }}" data-key="{{ fld.key }}" data-default="{{ fld.default }}" rows="{{ [3, (fld.default | length // 70) + 2] | max }}" maxlength="8000">{{ fld.default }}</textarea>
+              {% else %}
+              <input id="t-{{ fld.key }}" data-key="{{ fld.key }}" data-default="{{ fld.default }}" value="{{ fld.default }}" maxlength="8000">
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </details>
+        {% endfor %}
+        <div class="save-bar"><button class="btn" type="submit">Save changes</button><a href="/" target="_blank" rel="noopener">Open the website ↗</a><span class="err" id="t-err" role="alert"></span></div>
+      </form>
+    </section>
+
+    <section data-panel="pages" hidden>
+      <p class="help">Add your own pages, for example News, Programmes, Prayer requests or Give. Tick "Show in the menu" to
+        add a page to the top menu.</p>
+      <div class="table-wrap"><table><thead><tr><th>Page</th><th>Address</th><th>In menu</th><th></th></tr></thead><tbody id="pages-body"></tbody></table></div>
+      <form class="card form" id="page-form" novalidate>
+        <h2 id="page-form-title">Add a page</h2>
+        <input type="hidden" id="p-id">
+        <div class="row">
+          <div class="field"><label for="p-title">Title</label><input id="p-title" required maxlength="120" placeholder="News"></div>
+          <div class="field"><label for="p-slug">Web address</label><input id="p-slug" required maxlength="60" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="news"><small class="muted">The page will be at /pages/<em>this</em>. Lowercase letters, numbers and dashes.</small></div>
+        </div>
+        <div class="field"><label for="p-summary">Short introduction (optional)</label><input id="p-summary" maxlength="300"></div>
+        <div class="field"><label for="p-body">Page text</label><textarea id="p-body" rows="14" maxlength="50000"></textarea>
+          <small class="muted">Leave a blank line between paragraphs. Start a line with <code>## </code> for a heading and <code>- </code> for a list item. Links: <code>[words to click](https://address)</code>.</small></div>
+        <div class="row">
+          <div class="field"><label for="p-position">Order in the menu</label><input id="p-position" type="number" value="100"></div>
+          <div class="field"><span class="label">Visibility</span>
+            <label class="check"><input type="checkbox" id="p-menu"> Show in the menu</label>
+            <label class="check"><input type="checkbox" id="p-hidden"> Hidden from the public (draft)</label></div>
+        </div>
+        <div class="actions"><button class="btn" type="submit">Save page</button><button class="btn ghost" type="button" id="page-reset">Clear</button><span class="err" id="p-err" role="alert"></span></div>
+      </form>
+    </section>
+
+    <section data-panel="messages" hidden>
       <div class="actions"><label class="check"><input type="checkbox" id="m-show-handled"> Show handled messages</label></div>
       <div id="message-list" class="stack"></div>
     </section>

@@ -46,7 +46,7 @@
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Open the menu">
     <label for="nav-toggle" class="nav-burger" aria-hidden="true"><span></span><span></span><span></span></label>
     <nav class="nav-links" aria-label="Main">
-      {% for key, href, label in [("home","/","Home"),("about","/about","About"),("chapters","/chapters","Chapters"),("leadership","/leadership","Leadership"),("events","/events","Events"),("contact","/contact","Contact")] %}
+      {% for key, href, label in nav_items %}
       <a href="{{ href }}"{% if nav == key %} aria-current="page"{% endif %}>{{ label }}</a>
       {% endfor %}
     </nav>
@@ -60,7 +60,7 @@
   <div class="wrap footer-grid">
     <div>
       <a href="/" class="brand brand--light"><img src="/static/mark.svg" alt="" width="36" height="36"><span><strong>MMM Africa</strong></span></a>
-      <p>The African Chapter of the Medical Missionary Movement: national chapters across the continent, one family under MMM International.</p>
+      {{ text("footer.about") | paragraphs }}
     </div>
     <div>
       <h2>African Chapter</h2>
@@ -85,6 +85,7 @@
         <li><a href="/contact">Send us a message</a></li>
         {% if contact_email %}<li>{{ contact_email }}</li>{% endif %}
         {% if contact_phone %}<li>{{ contact_phone }}</li>{% endif %}
+        {% if text("contact.location") %}<li>{{ text("contact.location") }}</li>{% endif %}
       </ul>
     </div>
   </div>

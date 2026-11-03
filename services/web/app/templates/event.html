@@ -9,8 +9,8 @@
 </div></section>
 <section class="section"><div class="wrap grid grid-2">
   <div class="prose">
-    {% if event.state == "ended" and event.recap %}<h2>Thank you</h2><p>{{ event.recap }}</p>{% endif %}
-    {% if event.summary %}<h2>{{ "About the event" if event.state != "ended" else "What happened" }}</h2><p>{{ event.summary }}</p>{% endif %}
+    {% if event.state == "ended" and event.recap %}<h2>Thank you</h2>{{ event.recap | paragraphs }}{% endif %}
+    {% if event.summary %}<h2>{{ "About the event" if event.state != "ended" else "What happened" }}</h2>{{ event.summary | paragraphs }}{% endif %}
     {% if event.state != "ended" and event.register_url %}<p><a class="btn" href="{{ event.register_url }}" rel="noopener" target="_blank">Register ↗</a></p>{% endif %}
   </div>
   <div class="card">

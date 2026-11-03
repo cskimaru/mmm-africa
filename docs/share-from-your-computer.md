@@ -49,7 +49,7 @@ SITE_DOMAIN=mmmafrica.nabec.co.ke
 PUBLIC_HOSTNAME=mmmafrica.nabec.co.ke
 CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi...the long token...
 CONTACT_EMAIL=...            # shown in the footer
-SITE_PREVIEW=true            # password-protected until the committee approves
+SITE_PREVIEW=false           # public, no password
 ```
 
 Then:
@@ -62,7 +62,6 @@ The first time this builds everything (several minutes). It ends with:
 
 ```
 The site is shared at:      https://mmmafrica.nabec.co.ke
-Preview login:             user 'preview', password '…'
 On this computer:          http://localhost:8081
 ```
 
@@ -85,14 +84,22 @@ From the officers' area, invite the African Chapter officers and add leaders, ch
 | Get the latest version from GitHub | `git pull`, then `make share` |
 | Take a backup | `make backup-now` |
 
-## Launching publicly
+## Editing the website
 
-While `SITE_PREVIEW=true`, visitors need the preview login, and a bar at the top lets reviewers try the four
-colour schemes. When the committee has chosen:
+Everything visitors read is edited from the officers' area (`/officers`), with no code:
 
-1. In `.env` set `SITE_PALETTE=` to the chosen scheme (`sunrise`, `coast`, `highlands` or `evening`) and
-   `SITE_PREVIEW=false`.
-2. `make share`.
+* **Website text**: every heading and paragraph on the home, about, chapters, leadership, events and contact
+  pages, the footer, the public email and phone, and the colour scheme.
+* **Pages**: new pages such as News, Programmes or Give, optionally shown in the top menu.
+* **Chapters**, **Leaders**, **Events**: the chapter map and list, the leadership page, and the events.
+* **Messages**: what visitors send from the contact page.
+
+Invite other leaders from **Officer accounts**. *Editors* can change all content; *owners* can also manage accounts.
+
+## Password-protecting the site (optional)
+
+Set `SITE_PREVIEW=true` in `.env`, then `make init` and `make share`. Visitors then need the login in
+`secrets/preview_password`. Set it back to `false` the same way to remove the password.
 
 ## Moving to its own domain or a real server later
 

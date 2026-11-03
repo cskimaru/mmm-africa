@@ -62,7 +62,26 @@ EVENT = {
 }
 
 
-def mock_all():
+PAGE = {
+    "id": "p1",
+    "slug": "news",
+    "title": "News",
+    "summary": "Latest from the chapters",
+    "body": (
+        "## Outreach\n\nWe served <b>200</b> people.\n\n"
+        "- Nairobi\n- [Kisumu](https://example.org)\n- [bad](javascript:alert(1))"
+    ),
+    "in_menu": True,
+    "position": 1,
+    "hidden": False,
+    "updated_at": "2026-11-03T00:00:00Z",
+}
+
+
+def mock_all(content=None, pages=None):
+    respx.get(f"{D}/content").mock(return_value=httpx.Response(200, json={"values": content or {}}))
+    respx.get(f"{D}/pages").mock(return_value=httpx.Response(200, json=[PAGE] if pages is None else pages))
+    respx.get(f"{D}/pages/news").mock(return_value=httpx.Response(200, json=PAGE))
     respx.get(f"{D}/structure").mock(return_value=httpx.Response(200, json=STRUCTURE))
     respx.get(f"{D}/events").mock(return_value=httpx.Response(200, json=[EVENT]))
     respx.get(f"{D}/events/convention-2026").mock(return_value=httpx.Response(200, json=EVENT))
@@ -147,6 +166,8 @@ async def test_last_good_copy_is_served_when_directory_is_down(client):
 
 @respx.mock
 async def test_home_still_renders_with_nothing_cached(client):
+    respx.get(f"{D}/content").mock(side_effect=httpx.ConnectError("down"))
+    respx.get(f"{D}/pages").mock(side_effect=httpx.ConnectError("down"))
     respx.get(f"{D}/structure").mock(side_effect=httpx.ConnectError("down"))
     respx.get(f"{D}/events").mock(side_effect=httpx.ConnectError("down"))
     r = await client.get("/")
@@ -154,8 +175,58 @@ async def test_home_still_renders_with_nothing_cached(client):
     assert "could not be loaded" in r.text
 
 
+@respx.mock
 async def test_officer_pages_are_not_cached_or_indexed(client):
+    mock_all()
     r = await client.get("/officers")
     assert r.headers["cache-control"] == "no-store"
     assert "noindex" in r.text
     assert "Disallow: /officers" in (await client.get("/robots.txt")).text
+
+
+@respx.mock
+async def test_no_church_comparison_on_public_pages(client):
+    mock_all()
+    for path in ("/", "/about", "/chapters", "/chapters/kenya"):
+        html = (await client.get(path)).text
+        for phrase in ("Seventh-day", "General Conference", "Division", "Union", "finances"):
+            assert phrase not in html, (path, phrase)
+
+
+@respx.mock
+async def test_officers_text_and_colour_scheme_replace_the_defaults(client):
+    mock_all(
+        content={
+            "home.hero_title": "Healing <Africa>",
+            "site.palette": "coast",
+            "about.story_body": "See [MMMK](/chapters/kenya).",
+        }
+    )
+    home = (await client.get("/")).text
+    assert "Healing &lt;Africa&gt;" in home
+    assert 'data-palette="coast"' in home
+    assert "One continent. One calling." not in home
+    about = (await client.get("/about")).text
+    assert '<a href="/chapters/kenya">MMMK</a>' in about
+
+
+@respx.mock
+async def test_officer_written_page_and_menu(client):
+    mock_all()
+    home = (await client.get("/")).text
+    assert '<a href="/pages/news">News</a>' in home
+    html = (await client.get("/pages/news")).text
+    assert "<h2>Outreach</h2>" in html
+    assert "&lt;b&gt;200&lt;/b&gt;" in html
+    assert '<a href="https://example.org" rel="noopener" target="_blank">Kisumu</a>' in html
+    assert "javascript:" not in html.split("<main")[1].split("</main>")[0].replace("[bad](javascript:alert(1))", "")
+
+
+@respx.mock
+async def test_officers_area_lists_every_text_field(client):
+    mock_all()
+    html = (await client.get("/officers")).text
+    from app.site_text import DEFAULTS
+
+    for key in DEFAULTS:
+        assert f'data-key="{key}"' in html

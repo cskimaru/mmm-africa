@@ -6,7 +6,7 @@
 <section class="page-head"><div class="wrap">
   <p class="eyebrow">National chapter · {{ "Established" if unit.status == "established" else "Forming" }}</p>
   <h1>{{ unit.name }}{% if unit.short_name %} ({{ unit.short_name }}){% endif %}</h1>
-  {% if unit.summary %}<p>{{ unit.summary }}</p>{% endif %}
+  {% if unit.summary %}{{ unit.summary | paragraphs }}{% endif %}
   {% if unit.website_url %}<p><a class="btn" href="{{ unit.website_url }}" rel="noopener" target="_blank">Visit the {{ unit.short_name or unit.name }} website ↗</a></p>{% endif %}
 </div></section>
 
@@ -19,7 +19,7 @@
       {% if unit.phone %}<li><span>Phone</span>{{ unit.phone }}</li>{% endif %}
       {% if unit.website_url %}<li><span>Website</span><a href="{{ unit.website_url }}" rel="noopener" target="_blank">{{ unit.website_url | replace("https://", "") }}</a></li>{% endif %}
     </ul>
-    <p class="muted small">This chapter keeps its own leadership and finances. For membership, giving or local programmes, contact the chapter directly.</p>
+    <p class="muted small">For membership and local programmes, contact the chapter directly.</p>
   </div>
   <div class="card">
     <h2>Chapter leaders</h2>

@@ -24,18 +24,12 @@ Commands run from the repository folder on the server.
 - [ ] Set `ALERT_EMAIL_TO`, `SMTP_*` and `secrets/smtp_password` so alerts are emailed; `make init && make up`
 - [ ] Restore drill: restore last night's backup on a spare machine (below) and check the site
 
-## Private preview, then launch
+## Optional password (private preview)
 
-New installs start in **private preview** (`SITE_PREVIEW=true` in `.env`): every page asks for a password and
-search engines are told not to index the site. A bar at the top says the site is not public yet.
-
-1. `make init` prints the preview login: user `preview`, password in `secrets/preview_password`.
-2. Send reviewers the address and that login.
-3. Reviewers who should edit content also need an officer account: invite them from `/officers`
-   (Officer accounts tab). They sign in as usual, behind the preview password.
-
-To launch: set `SITE_PREVIEW=false` in `.env`, then `make init && make up`. The password and the preview bar
-disappear and the site is public. To return to preview later, set it back to `true` and run the same commands.
+The site is public by default. To put the whole site behind a password, for example while reorganising, set
+`SITE_PREVIEW=true` in `.env` and run `make init && make up`. The login is user `preview`, password in
+`secrets/preview_password`, and a bar at the top lets visitors try the colour schemes. Set it back to `false`
+and run the same commands to remove the password.
 
 ## Monitoring
 

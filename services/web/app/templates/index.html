@@ -4,14 +4,12 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div class="hero-text">
-      <p class="kicker">Medical Missionary Movement · African Chapter</p>
-      <h1>One continent. One calling. Healing in His name.</h1>
-      <p class="lead">The MMM African Chapter brings together national chapters, health professionals, students and
-        volunteers across Africa, one family under MMM International, carrying the healing ministry of Christ to every
-        community on the continent.</p>
+      <p class="kicker">{{ text("home.kicker") }}</p>
+      <h1>{{ text("home.hero_title") }}</h1>
+      <div class="lead">{{ text("home.hero_lead") | paragraphs }}</div>
       <div class="actions">
-        <a class="btn gold" href="/chapters">Find a chapter</a>
-        <a class="btn ghost-light" href="/contact?topic=start_chapter">Start a chapter</a>
+        <a class="btn gold" href="/chapters">{{ text("home.find_button") }}</a>
+        <a class="btn ghost-light" href="/contact?topic=start_chapter">{{ text("home.start_button") }}</a>
       </div>
     </div>
     <div class="hero-map">{{ africa_map(countries, map_viewbox) }}</div>
@@ -21,14 +19,13 @@
 <section class="section">
   <div class="wrap">
     <div class="section-head">
-      <p class="eyebrow">One movement, under one roof</p>
-      <h2>How the MMM family fits together</h2>
-      <p>Like the Seventh-day Adventist Church, MMM is organised in levels. Each level has its own leaders and its own
-        finances; they share a mission and come together for activities such as the Annual Convention.</p>
+      <p class="eyebrow">{{ text("home.family_eyebrow") }}</p>
+      <h2>{{ text("home.family_title") }}</h2>
+      {{ text("home.family_intro") | paragraphs }}
     </div>
     <ol class="tiers">
       <li class="tier tier--intl">
-        <span class="tier-level">World · like the General Conference</span>
+        <span class="tier-level">{{ text("home.tier_intl_label") }}</span>
         {% for u in structure.international %}
         <h3>{{ u.name }}</h3>
         <p>{{ u.summary }}</p>
@@ -36,17 +33,15 @@
         {% else %}<h3>MMM International</h3>{% endfor %}
       </li>
       <li class="tier tier--continental">
-        <span class="tier-level">Continent · like a Division</span>
+        <span class="tier-level">{{ text("home.tier_africa_label") }}</span>
         <h3>MMM African Chapter <span class="here">You are here</span></h3>
-        <p>Coordinates the national chapters across Africa, hosts the Annual Convention with a national chapter each
-          year, and helps new chapters start.</p>
+        {{ text("home.tier_africa_text") | paragraphs }}
         <a href="/about">About the African Chapter →</a>
       </li>
       <li class="tier tier--national">
-        <span class="tier-level">Country · like a Union</span>
-        <h3>National chapters</h3>
-        <p>Local leadership, outreach camps, student fellowships and church partnerships in each country, each with
-          its own website, officers and accounts.</p>
+        <span class="tier-level">{{ text("home.tier_national_label") }}</span>
+        <h3>{{ text("home.tier_national_title") }}</h3>
+        {{ text("home.tier_national_text") | paragraphs }}
         <div class="chips">
           {% for u in structure.national %}<a class="chip" href="/chapters/{{ u.slug }}">{{ u.name }}</a>{% endfor %}
           <a class="chip ghost" href="/chapters#start">+ Start a chapter</a>
@@ -64,7 +59,7 @@
       <h2>{{ featured.title }}</h2>
       {% if featured.theme %}<p class="theme">“{{ featured.theme }}”{% if featured.scripture %} · {{ featured.scripture }}{% endif %}</p>{% endif %}
       <p>{{ featured.starts_on | date_range(featured.ends_on) }}{% if featured.venue %} · {{ featured.venue }}{% endif %}{% if featured.location %}, {{ featured.location }}{% endif %}{% if featured.host %}. Hosted by {{ featured.host.name }}{% endif %}.</p>
-      <p>{{ featured.recap if featured.state == "ended" and featured.recap else featured.summary }}</p>
+      {{ (featured.recap if featured.state == "ended" and featured.recap else featured.summary) | paragraphs }}
       <div class="actions">
         <a class="btn gold" href="/events/{{ featured.slug }}">{{ "Read the recap" if featured.state == "ended" else "Event details" }}</a>
         {% if featured.host and featured.host.website_url %}<a class="btn ghost-light" href="{{ featured.host.website_url }}" rel="noopener" target="_blank">{{ featured.host.short_name or featured.host.name }} website ↗</a>{% endif %}
@@ -77,14 +72,13 @@
 <section class="section alt">
   <div class="wrap">
     <div class="section-head">
-      <p class="eyebrow">What we do across Africa</p>
-      <h2>Four pillars of continental ministry</h2>
+      <p class="eyebrow">{{ text("home.pillars_eyebrow") }}</p>
+      <h2>{{ text("home.pillars_title") }}</h2>
     </div>
     <div class="grid grid-4">
-      <div class="card"><div class="icon" aria-hidden="true">🩺</div><h3>Medical missions</h3><p>Joint outreach camps and cross-border mission teams serving communities with little access to care.</p></div>
-      <div class="card"><div class="icon" aria-hidden="true">📖</div><h3>Training</h3><p>Equipping health workers and students in whole-person care, health evangelism and servant leadership.</p></div>
-      <div class="card"><div class="icon" aria-hidden="true">🌱</div><h3>Chapter growth</h3><p>Helping believers start, organise and grow MMM chapters in their own countries.</p></div>
-      <div class="card"><div class="icon" aria-hidden="true">🤝</div><h3>Fellowship</h3><p>Bringing delegates together every year at the African Chapter Annual Convention.</p></div>
+      {% for n, icon in [(1, "🩺"), (2, "📖"), (3, "🌱"), (4, "🤝")] %}
+      <div class="card"><div class="icon" aria-hidden="true">{{ icon }}</div><h3>{{ text("home.pillar%d_title" % n) }}</h3>{{ text("home.pillar%d_text" % n) | paragraphs }}</div>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -92,9 +86,8 @@
 <section class="section">
   <div class="wrap">
     <figure class="verse">
-      <blockquote>“And Jesus went about all the cities and villages, teaching in their synagogues, and preaching the gospel
-        of the kingdom, and healing every sickness and every disease among the people.”</blockquote>
-      <figcaption>Matthew 9:35</figcaption>
+      <blockquote>“{{ text("home.verse_text") }}”</blockquote>
+      <figcaption>{{ text("home.verse_ref") }}</figcaption>
     </figure>
   </div>
 </section>
@@ -102,8 +95,8 @@
 <section class="section">
   <div class="wrap">
     <div class="section-head">
-      <p class="eyebrow">National chapters</p>
-      <h2>Chapters of the African Chapter</h2>
+      <p class="eyebrow">{{ text("home.chapters_eyebrow") }}</p>
+      <h2>{{ text("home.chapters_title") }}</h2>
     </div>
     <div class="grid grid-3">
       {% for u in structure.national %}{{ chapter_card(u) }}{% endfor %}
@@ -120,8 +113,8 @@
 <section class="section">
   <div class="wrap">
     <div class="cta">
-      <div><h2>Serve with MMM Africa</h2><p>Volunteer, partner with a chapter, or help us start one in your country.</p></div>
-      <a class="btn light" href="/contact">Get in touch</a>
+      <div><h2>{{ text("home.cta_title") }}</h2><p>{{ text("home.cta_text") }}</p></div>
+      <a class="btn light" href="/contact">{{ text("home.cta_button") }}</a>
     </div>
   </div>
 </section>
