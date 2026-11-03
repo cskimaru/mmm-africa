@@ -216,3 +216,22 @@ def test_allowed_origins_setting():
 
     s = CommonSettings(site_origin="https://abc.trycloudflare.com/", extra_origins="http://localhost:8080, ")
     assert s.allowed_origins == {"https://abc.trycloudflare.com", "http://localhost:8080"}
+
+
+async def test_cli_reset_password_lets_the_owner_sign_in_again(client):
+    from app import cli
+
+    assert await cli.create_owner("chair@example.org", "Chair", "first-password-1") == 0
+    # A typo at creation: the intended password does not work.
+    r = await client.post("/api/auth/login", json={"email": "chair@example.org", "password": "intended-pass-2"})
+    assert r.status_code == 401
+    # Running create-owner again does not change the password...
+    assert await cli.create_owner("chair@example.org", "Chair", "intended-pass-2") == 0
+    r = await client.post("/api/auth/login", json={"email": "chair@example.org", "password": "intended-pass-2"})
+    assert r.status_code == 401
+    # ...reset-password does, and also clears a lock.
+    assert await cli.reset_password("CHAIR@example.org", "intended-pass-2") == 0
+    r = await client.post("/api/auth/login", json={"email": "chair@example.org", "password": "intended-pass-2"})
+    assert r.status_code == 200
+    assert await cli.reset_password("nobody@example.org", "intended-pass-2") == 1
+    assert await cli.reset_password("chair@example.org", "short") == 2

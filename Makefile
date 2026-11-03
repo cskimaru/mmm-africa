@@ -4,7 +4,7 @@ DEV := $(COMPOSE) -f docker-compose.yml -f docker-compose.dev.yml
 SERVICES := auth directory web
 PY ?= python3
 
-.PHONY: help share share-new share-stop restore-here traffic init up down down-apps dev dev-down logs ps migrate create-owner backup-now restore smoke test lint fmt build pull deploy
+.PHONY: help share share-new share-stop restore-here traffic init up down down-apps dev dev-down logs ps migrate create-owner reset-password backup-now restore smoke test lint fmt build pull deploy
 
 help:          ## Show this help
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -58,6 +58,9 @@ ps:
 
 create-owner:  ## Create the first owner account: make create-owner email=... name=...
 	$(COMPOSE) exec -it auth python -m app.cli create-owner --email "$(email)" --name "$(name)"
+
+reset-password: ## Set a new password for an account and clear any lock: make reset-password email=...
+	$(COMPOSE) exec -it auth python -m app.cli reset-password --email "$(email)"
 
 backup-now:    ## Take a backup immediately
 	$(COMPOSE) exec backup backup.sh
