@@ -173,9 +173,9 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build --wait \
             caddy web auth directory postgres redis
       - name: Preview password is required
-        run: test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/)" = 401
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/)" = 401
       - name: Smoke test
-        run: PREVIEW_PASSWORD="$(cat secrets/preview_password)" python3 scripts/smoke_test.py http://localhost:8080
+        run: PREVIEW_PASSWORD="$(cat secrets/preview_password)" python3 scripts/smoke_test.py http://localhost:8081
       - name: Logs on failure
         if: failure()
         run: docker compose logs --tail=200

@@ -78,7 +78,7 @@ echo "The site is shared at:      $url"
 if grep -qE '^SITE_PREVIEW=true' .env; then
   echo "Preview login:             user 'preview', password '$(cat secrets/preview_password)'"
 fi
-echo "On this computer:          http://localhost:8080"
+echo "On this computer:          http://localhost:8081"
 echo
 echo "The link works while this computer is on and connected. 'make share-stop' stops it."
 echo "First time? Create the first officer account:  make create-owner email=you@example.com name=\"Your Name\""

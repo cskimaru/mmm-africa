@@ -1,19 +1,19 @@
-# Local development / CI: plain HTTP on http://localhost:8080, no certificates.
+# Local development / CI: plain HTTP on http://localhost:8081 (8081, not 8080, so it can run next to the Martha site), no certificates.
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 services:
   caddy:
-    ports: !override ["8080:80"]
+    ports: !override ["8081:80"]
     environment:
       SITE_ADDRESS: ":80"
   web:
     environment:
       ENVIRONMENT: development
-      SITE_ORIGIN: http://localhost:8080
+      SITE_ORIGIN: http://localhost:8081
       DIRECTORY_URL: http://directory:8000
   auth:
     environment:
       ENVIRONMENT: development
-      SITE_ORIGIN: http://localhost:8080
+      SITE_ORIGIN: http://localhost:8081
       COOKIE_SECURE: "false"
   directory:
-    environment: { ENVIRONMENT: development, SITE_ORIGIN: "http://localhost:8080" }
+    environment: { ENVIRONMENT: development, SITE_ORIGIN: "http://localhost:8081" }

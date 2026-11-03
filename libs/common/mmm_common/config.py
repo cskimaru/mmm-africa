@@ -30,8 +30,8 @@ class CommonSettings(BaseSettings):
 
     # Public origin of the site, e.g. https://mmmafrica.example.org. Used for the
     # cross-site request check on cookie-authenticated writes.
-    site_origin: str = "http://localhost:8080"
-    # Other addresses the site is also opened at, comma-separated (e.g. http://localhost:8080 while
+    site_origin: str = "http://localhost:8081"
+    # Other addresses the site is also opened at, comma-separated (e.g. http://localhost:8081 while
     # it is shared through a tunnel). Signed-in changes are accepted from these too.
     extra_origins: str = ""
 

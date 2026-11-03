@@ -5,7 +5,7 @@
 #   https://mmmafrica.org. Set CLOUDFLARE_TUNNEL_TOKEN and PUBLIC_HOSTNAME in .env.
 x-public: &public
   SITE_ORIGIN: ${PUBLIC_URL:?run make share instead of using this file directly}
-  EXTRA_ORIGINS: http://localhost:8080
+  EXTRA_ORIGINS: http://localhost:8081
 
 services:
   cloudflared:

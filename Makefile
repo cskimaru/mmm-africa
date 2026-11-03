@@ -44,7 +44,7 @@ pull:          ## Pull the images for IMAGE_TAG
 build:         ## Build all images locally
 	$(COMPOSE) build
 
-dev:           ## Run locally on http://localhost:8080
+dev:           ## Run locally on http://localhost:8081
 	$(DEV) up -d --build --wait
 
 dev-down:

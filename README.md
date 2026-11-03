@@ -37,15 +37,19 @@ Needs Docker with Compose v2.24+.
 ```sh
 make init                 # creates .env; edit it if you like, then run again to generate secrets
 make init
-make dev                  # http://localhost:8080
+make dev                  # http://localhost:8081
 make create-owner email=you@example.com name="Your Name"
 ```
 
-Sign in at http://localhost:8080/officers, invite other officers, and add chapters, leaders and events.
+Sign in at http://localhost:8081/officers, invite other officers, and add chapters, leaders and events.
 
-To share the copy on your computer with others, `make share` gives a free Cloudflare link.
+To publish the copy on your computer, `make share` gives a free Cloudflare link, or a permanent address such as
+https://mmmafrica.nabec.co.ke: see [docs/share-from-your-computer.md](docs/share-from-your-computer.md).
 
 ## Put it on the internet
+
+* **From your own computer at mmmafrica.nabec.co.ke** (current setup, next to the Martha site):
+  [docs/share-from-your-computer.md](docs/share-from-your-computer.md).
 
 * **With Terraform** (recommended): [docs/infrastructure.md](docs/infrastructure.md) creates an Oracle Cloud
   free-tier server that installs and starts the site by itself on first boot.
