@@ -219,7 +219,7 @@ services:
       postgres: { condition: service_healthy }
 
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.25.0
+    image: prom/blackbox-exporter:v0.29.1
     restart: unless-stopped
     volumes: [./deploy/prometheus/blackbox.yml:/etc/blackbox_exporter/config.yml:ro]
     networks: [monitoring, edge]
