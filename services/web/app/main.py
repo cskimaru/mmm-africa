@@ -1,10 +1,11 @@
 import hashlib
 import json
+import re
 from datetime import date
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -25,6 +26,32 @@ async def shutdown(app: FastAPI) -> None:
 
 app = create_app(settings, title="MMM Africa web", on_shutdown=shutdown)
 app.state.content = ContentClient(settings)
+
+
+def versioned_css() -> str:
+    """site.css with a fingerprint added to each background picture's address.
+
+    Pictures are cached for a week by browsers and Cloudflare, so a changed picture needs a new address to show.
+    """
+    css = (HERE / "static" / "site.css").read_text()
+
+    def stamp(m: re.Match) -> str:
+        path = HERE / "static" / m.group(1)
+        if not path.is_file():
+            return m.group(0)
+        return f"url(/static/{m.group(1)}?v={hashlib.sha256(path.read_bytes()).hexdigest()[:10]})"
+
+    return re.sub(r"url\(/static/([\w./-]+\.(?:webp|png|jpg|jpeg|svg))\)", stamp, css)
+
+
+SITE_CSS = versioned_css()
+
+
+@app.get("/static/site.css", include_in_schema=False)
+async def site_css() -> Response:
+    return Response(SITE_CSS, media_type="text/css", headers={"Cache-Control": "public, max-age=604800"})
+
+
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 

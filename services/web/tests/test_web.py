@@ -230,3 +230,11 @@ async def test_officers_area_lists_every_text_field(client):
 
     for key in DEFAULTS:
         assert f'data-key="{key}"' in html
+
+
+async def test_background_pictures_get_a_fingerprint_so_changes_show(client):
+    r = await client.get("/static/site.css")
+    assert r.status_code == 200
+    assert "text/css" in r.headers["content-type"]
+    assert "url(/static/art/sunrise.webp?v=" in r.text
+    assert "url(/static/art/sunrise.webp)" not in r.text
