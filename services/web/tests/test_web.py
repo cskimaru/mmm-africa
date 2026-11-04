@@ -238,3 +238,13 @@ async def test_background_pictures_get_a_fingerprint_so_changes_show(client):
     assert "text/css" in r.headers["content-type"]
     assert "url(/static/art/sunrise.webp?v=" in r.text
     assert "url(/static/art/sunrise.webp)" not in r.text
+
+
+@respx.mock
+async def test_request_access_page(client):
+    mock_all()
+    r = await client.get("/officers/request")
+    assert r.status_code == 200
+    assert 'id="r-phone"' in r.text and "country code" in r.text
+    assert r.headers["cache-control"] == "no-store"
+    assert "Request access" in (await client.get("/officers")).text

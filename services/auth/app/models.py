@@ -17,6 +17,9 @@ class User(IdMixin, TimestampMixin, Base):
     failed_logins: Mapped[int] = mapped_column(Integer, default=0)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    phone: Mapped[str] = mapped_column(String(32), default="")
+    position: Mapped[str] = mapped_column(String(120), default="")
+    country: Mapped[str] = mapped_column(String(80), default="")
 
     @property
     def role_list(self) -> list[str]:
@@ -47,6 +50,23 @@ class Invitation(IdMixin, Base):
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AccessRequest(IdMixin, Base):
+    """A leader asking for an officers' account. An owner approves (creating the account) or declines it."""
+
+    __tablename__ = "access_requests"
+
+    email: Mapped[str] = mapped_column(String(254), index=True)
+    display_name: Mapped[str] = mapped_column(String(120))
+    phone: Mapped[str] = mapped_column(String(32))
+    position: Mapped[str] = mapped_column(String(120), default="")
+    country: Mapped[str] = mapped_column(String(80), default="")
+    password_hash: Mapped[str] = mapped_column(String(255))
+    status: Mapped[str] = mapped_column(String(12), default="pending", index=True)  # pending, approved, declined
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    decided_by: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
 
 class AuditLog(IdMixin, Base):

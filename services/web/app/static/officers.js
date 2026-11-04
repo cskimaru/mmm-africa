@@ -18,6 +18,11 @@
     $("me-name").textContent = user.display_name;
     $("me-roles").textContent = "(" + user.roles.map((r) => ROLE_NAMES[r] || r).join(", ") + ")";
     document.querySelectorAll("[data-role]").forEach((b) => { b.hidden = !hasRole(user, b.dataset.role); });
+    if (hasRole(user, "owner")) {
+      api("GET", "/api/auth/requests").then((rows) => {
+        if (rows.length) document.querySelector("[data-tab=people]").textContent = `Officer accounts (${rows.length} waiting)`;
+      }).catch(() => {});
+    }
     const wanted = location.hash.replace("#", "");
     const tab = document.querySelector(`[data-tab="${wanted}"]:not([hidden])`) || document.querySelector("[data-tab=text]");
     select(tab.dataset.tab);
@@ -282,13 +287,28 @@
   // ---- Officer accounts ----
   async function loadPeople() {
     try {
-      const [users, invites] = await Promise.all([api("GET", "/api/auth/users"), api("GET", "/api/auth/invitations")]);
+      const [users, invites, requests] = await Promise.all([api("GET", "/api/auth/users"), api("GET", "/api/auth/invitations"), api("GET", "/api/auth/requests")]);
+      $("requests-body").replaceChildren(...(requests.length ? requests.map((r) => {
+        const decide = (path, body, done) => async () => {
+          try { await api("POST", `/api/auth/requests/${r.id}/${path}`, body); toast(done); loadPeople(); } catch (e) { toast(e.message); }
+        };
+        const decline = h("button", { class: "btn link danger", type: "button" }, "Decline");
+        confirmClick(decline, "Confirm decline", decide("decline", undefined, "Request declined"));
+        return h("tr", null, h("td", null, r.display_name), h("td", null, r.position), h("td", null, r.email),
+          h("td", null, r.phone), h("td", null, r.country), h("td", null, fmt(r.created_at)),
+          h("td", null,
+            h("button", { class: "btn small", type: "button", onclick: decide("approve", { roles: ["editor"] }, r.display_name + " can now sign in as an editor") }, "Approve as editor"), " ",
+            h("button", { class: "btn small ghost", type: "button", onclick: decide("approve", { roles: ["owner"] }, r.display_name + " can now sign in as an owner") }, "Approve as owner"), " ",
+            decline));
+      }) : [h("tr", null, h("td", { colspan: "7", class: "muted" }, "No requests waiting."))]));
+      const tab = document.querySelector("[data-tab=people]");
+      tab.textContent = requests.length ? `Officer accounts (${requests.length} waiting)` : "Officer accounts";
       $("users-body").replaceChildren(...users.map((u) => {
         const act = h("button", { class: "btn link danger", type: "button" }, u.is_active ? "Remove access" : "Restore access");
         if (u.id !== user.id) confirmClick(act, "Confirm", async () => {
           try { await api("PATCH", `/api/auth/users/${u.id}`, { is_active: !u.is_active }); loadPeople(); } catch (e) { toast(e.message); }
         });
-        return h("tr", null, h("td", null, u.display_name), h("td", null, u.email), h("td", null, u.roles.map((r) => ROLE_NAMES[r]).join(", ")),
+        return h("tr", null, h("td", null, u.display_name), h("td", null, u.position || "—"), h("td", null, u.email), h("td", null, u.phone || "—"), h("td", null, u.roles.map((r) => ROLE_NAMES[r]).join(", ")),
           h("td", null, fmt(u.last_login_at)), h("td", null, u.id === user.id ? "You" : u.is_active ? act : h("span", null, "No access ", act)));
       }));
       $("invites-body").replaceChildren(...invites.map((i) => {

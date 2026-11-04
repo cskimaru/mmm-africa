@@ -10,7 +10,7 @@
     <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" required></div>
     <div class="field"><label for="l-password">Password</label><input id="l-password" type="password" autocomplete="current-password" required></div>
     <div class="actions"><button class="btn" type="submit">Sign in</button><span class="err" id="l-err" role="alert"></span></div>
-    <p class="muted small">Accounts are created by invitation from the African Chapter secretariat.</p>
+    <p class="muted small">New here? <a href="/officers/request">Request access</a>. An owner approves each request.</p>
   </form>
 
   <div id="dash" hidden>
@@ -169,8 +169,13 @@
     </section>
 
     <section data-panel="people" hidden>
+      <h2>Requests waiting for approval</h2>
+      <p class="help">Leaders who asked for access from the <a href="/officers/request" target="_blank" rel="noopener">Request access</a> page.
+        Check their details, then approve them as an <strong>Editor</strong> (can change all content) or an
+        <strong>Owner</strong> (can also approve others and manage accounts).</p>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Position</th><th>Email</th><th>Phone</th><th>Country</th><th>Asked</th><th></th></tr></thead><tbody id="requests-body"></tbody></table></div>
       <form class="card form" id="invite-form" novalidate>
-        <h2>Invite an officer</h2>
+        <h2>Or invite an officer by link</h2>
         <div class="row">
           <div class="field"><label for="i-email">Their email</label><input id="i-email" type="email" required></div>
           <div class="field"><label for="i-name">Their name</label><input id="i-name" maxlength="120"></div>
@@ -184,7 +189,7 @@
         <p class="muted small" id="invite-hint" hidden>Send this link privately, for example on WhatsApp. It works once and expires in 14 days.</p>
       </form>
       <h2>Accounts</h2>
-      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Last sign-in</th><th></th></tr></thead><tbody id="users-body"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Position</th><th>Email</th><th>Phone</th><th>Roles</th><th>Last sign-in</th><th></th></tr></thead><tbody id="users-body"></tbody></table></div>
       <h2>Invitations</h2>
       <div class="table-wrap"><table><thead><tr><th>Email</th><th>Roles</th><th>Status</th><th></th></tr></thead><tbody id="invites-body"></tbody></table></div>
     </section>

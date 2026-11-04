@@ -300,6 +300,11 @@ async def officers(request: Request) -> HTMLResponse:
     return await render(request, "officers.html", {"nav": "", "groups": GROUPS}, cache=False)
 
 
+@app.get("/officers/request", response_class=HTMLResponse)
+async def request_access(request: Request) -> HTMLResponse:
+    return await render(request, "request.html", {"nav": ""}, cache=False)
+
+
 @app.get("/invite", response_class=HTMLResponse)
 async def invite(request: Request) -> HTMLResponse:
     return await render(request, "invite.html", {"nav": ""}, cache=False)

@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,10 +18,13 @@ from mmm_common.security import (
 )
 
 from .config import Settings
-from .models import AuditLog, Invitation, RefreshToken, User
+from .models import AccessRequest, AuditLog, Invitation, RefreshToken, User
 from .passwords import hash_password, needs_rehash, verify_password
 from .schemas import (
     AcceptIn,
+    AccessRequestIn,
+    AccessRequestOut,
+    ApproveIn,
     InviteIn,
     InviteInfoOut,
     InviteOut,
@@ -53,6 +56,9 @@ def user_out(u: User) -> UserOut:
         roles=u.role_list,
         is_active=u.is_active,
         last_login_at=u.last_login_at,
+        phone=u.phone or "",
+        position=u.position or "",
+        country=u.country or "",
     )
 
 
@@ -124,6 +130,23 @@ async def login(
         )
 
     ok = verify_password(user.password_hash if user else None, body.password)
+    if not user:
+        # Someone who asked for access and typed the same password: tell them it is waiting for approval.
+        pending = (
+            (
+                await s.execute(
+                    select(AccessRequest)
+                    .where(AccessRequest.email == email, AccessRequest.status == "pending")
+                    .order_by(AccessRequest.created_at.desc())
+                )
+            )
+            .scalars()
+            .first()
+        )
+        if pending and verify_password(pending.password_hash, body.password):
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN, "Your request for access is waiting for an owner to approve it."
+            )
     if not user or not ok or not user.is_active:
         if user:
             user.failed_logins += 1
@@ -395,3 +418,110 @@ async def patch_user(
     audit(s, request, p.user_id, "user.updated", user.email, f"roles={user.roles} active={user.is_active}")
     await s.commit()
     return user_out(user)
+
+
+# ---- Requests for access (a leader asks; an owner approves or declines) ----
+
+
+def request_out(r: AccessRequest) -> AccessRequestOut:
+    return AccessRequestOut(
+        id=r.id,
+        email=r.email,
+        display_name=r.display_name,
+        phone=r.phone,
+        position=r.position,
+        country=r.country,
+        status=r.status,
+        created_at=r.created_at,
+        decided_at=r.decided_at,
+    )
+
+
+@router.post("/requests", status_code=202, dependencies=[Depends(rate_limit("access-request", 5, 3600))])
+async def request_access(
+    body: AccessRequestIn,
+    request: Request,
+    s: AsyncSession = Depends(session_dep),
+    settings: Settings = Depends(settings_dep),
+) -> dict:
+    done = {"detail": "Thank you. An owner will review your request. You can sign in once it is approved."}
+    if body.website:
+        return done
+    email = str(body.email).lower()
+    if (await s.execute(select(User).where(User.email == email))).scalar_one_or_none():
+        raise HTTPException(409, "Someone with that email already has an account. Sign in instead.")
+    waiting = (
+        await s.execute(select(AccessRequest).where(AccessRequest.email == email, AccessRequest.status == "pending"))
+    ).scalar_one_or_none()
+    if waiting:
+        raise HTTPException(409, "A request for this email is already waiting for approval.")
+    check_password_strength(body.password, settings, email)
+    r = AccessRequest(
+        email=email,
+        display_name=body.display_name.strip(),
+        phone=body.phone,
+        position=body.position.strip(),
+        country=body.country.strip(),
+        password_hash=hash_password(body.password),
+    )
+    s.add(r)
+    audit(s, request, None, "access.requested", email)
+    await s.commit()
+    return done
+
+
+@router.get("/requests", response_model=list[AccessRequestOut])
+async def list_requests(
+    status_: str = Query("pending", alias="status"),
+    p: Principal = Depends(require_roles(ROLE_OWNER)),
+    s: AsyncSession = Depends(session_dep),
+) -> list[AccessRequestOut]:
+    q = select(AccessRequest).order_by(AccessRequest.created_at.desc()).limit(200)
+    if status_ != "all":
+        q = q.where(AccessRequest.status == status_)
+    return [request_out(r) for r in (await s.execute(q)).scalars()]
+
+
+@router.post("/requests/{request_id}/approve", response_model=UserOut)
+async def approve_request(
+    request_id: str,
+    body: ApproveIn,
+    request: Request,
+    p: Principal = Depends(require_roles(ROLE_OWNER)),
+    s: AsyncSession = Depends(session_dep),
+) -> UserOut:
+    r = await s.get(AccessRequest, request_id)
+    if r is None or r.status != "pending":
+        raise HTTPException(404, "This request has already been handled.")
+    if (await s.execute(select(User).where(User.email == r.email))).scalar_one_or_none():
+        raise HTTPException(409, "Someone with that email already has an account.")
+    user = User(
+        email=r.email,
+        display_name=r.display_name,
+        password_hash=r.password_hash,
+        roles=",".join(body.roles),
+        phone=r.phone,
+        position=r.position,
+        country=r.country,
+    )
+    s.add(user)
+    r.status, r.decided_at, r.decided_by = "approved", utcnow(), p.user_id
+    audit(s, request, p.user_id, "access.approved", r.email, ",".join(body.roles))
+    await s.commit()
+    return user_out(user)
+
+
+@router.post("/requests/{request_id}/decline", response_model=AccessRequestOut)
+async def decline_request(
+    request_id: str,
+    request: Request,
+    p: Principal = Depends(require_roles(ROLE_OWNER)),
+    s: AsyncSession = Depends(session_dep),
+) -> AccessRequestOut:
+    r = await s.get(AccessRequest, request_id)
+    if r is None or r.status != "pending":
+        raise HTTPException(404, "This request has already been handled.")
+    r.status, r.decided_at, r.decided_by = "declined", utcnow(), p.user_id
+    audit(s, request, p.user_id, "access.declined", r.email)
+    await s.commit()
+    return request_out(r)

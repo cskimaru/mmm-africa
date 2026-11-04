@@ -235,3 +235,62 @@ async def test_cli_reset_password_lets_the_owner_sign_in_again(client):
     assert r.status_code == 200
     assert await cli.reset_password("nobody@example.org", "intended-pass-2") == 1
     assert await cli.reset_password("chair@example.org", "short") == 2
+
+
+REQ = {
+    "display_name": "Grace Achieng",
+    "email": "grace@example.org",
+    "phone": "+254 712 345 678",
+    "position": "Secretary, MMM Kenya Chapter",
+    "country": "Kenya",
+    "password": "healing hands 2026",
+}
+
+
+async def _owner_headers(client):
+    from app import cli
+
+    await cli.create_owner("owner-req@example.org", "Owner", "owner password 1")
+    r = await client.post("/api/auth/login", json={"email": "owner-req@example.org", "password": "owner password 1"})
+    assert r.status_code == 200
+    return {"origin": "http://testserver"}
+
+
+async def test_access_request_flow(client):
+    # Phone must carry a country code.
+    bad = await client.post("/api/auth/requests", json={**REQ, "phone": "0712345678"})
+    assert bad.status_code == 422
+    r = await client.post("/api/auth/requests", json=REQ)
+    assert r.status_code == 202
+    # Asking twice is refused politely.
+    assert (await client.post("/api/auth/requests", json=REQ)).status_code == 409
+    # Before approval, signing in says the request is waiting (only with the right password).
+    r = await client.post("/api/auth/login", json={"email": REQ["email"], "password": REQ["password"]})
+    assert r.status_code == 403 and "waiting" in r.json()["detail"]
+    r = await client.post("/api/auth/login", json={"email": REQ["email"], "password": "wrong password 9"})
+    assert r.status_code == 401
+    # Only owners see and decide requests.
+    assert (await client.get("/api/auth/requests")).status_code == 401
+    headers = await _owner_headers(client)
+    rows = (await client.get("/api/auth/requests", headers=headers)).json()
+    assert [x["email"] for x in rows] == [REQ["email"]]
+    assert rows[0]["phone"] == "+254712345678"
+    r = await client.post(f"/api/auth/requests/{rows[0]['id']}/approve", json={"roles": ["editor"]}, headers=headers)
+    assert r.status_code == 200
+    assert r.json()["position"] == "Secretary, MMM Kenya Chapter"
+    assert (await client.get("/api/auth/requests", headers=headers)).json() == []
+    # The leader now signs in with the password they chose.
+    await client.post("/api/auth/logout", headers=headers)
+    r = await client.post("/api/auth/login", json={"email": REQ["email"], "password": REQ["password"]})
+    assert r.status_code == 200 and r.json()["roles"] == ["editor"]
+
+
+async def test_declined_request_cannot_sign_in(client):
+    req = {**REQ, "email": "someone@example.org"}
+    assert (await client.post("/api/auth/requests", json=req)).status_code == 202
+    headers = await _owner_headers(client)
+    rid = (await client.get("/api/auth/requests", headers=headers)).json()[0]["id"]
+    assert (await client.post(f"/api/auth/requests/{rid}/decline", headers=headers)).status_code == 200
+    await client.post("/api/auth/logout", headers=headers)
+    r = await client.post("/api/auth/login", json={"email": req["email"], "password": req["password"]})
+    assert r.status_code == 401

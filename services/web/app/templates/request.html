@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Request access · MMM Africa{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block body %}
+<section class="section"><div class="wrap narrow">
+  <h1 class="grad">Request access to the officers' area</h1>
+  <p class="help">For leaders who will help run this website. An owner checks every request; you can sign in once it is
+    approved.</p>
+  <form class="card form" id="request-form" novalidate>
+    <div class="row">
+      <div class="field"><label for="r-name">Full name</label><input id="r-name" required maxlength="120" autocomplete="name"></div>
+      <div class="field"><label for="r-email">Email</label><input id="r-email" type="email" required maxlength="254" autocomplete="email"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="r-phone">Phone number with country code</label>
+        <input id="r-phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="+254 712 345 678" inputmode="tel">
+        <small class="muted">Start with + and your country code, for example +254 (Kenya), +256 (Uganda), +255 (Tanzania).</small></div>
+      <div class="field"><label for="r-country">Country</label><input id="r-country" required maxlength="80" autocomplete="country-name"></div>
+    </div>
+    <div class="field"><label for="r-position">Your position in MMM</label>
+      <input id="r-position" required maxlength="120" placeholder="Secretary, MMM African Chapter"></div>
+    <div class="row">
+      <div class="field"><label for="r-password">Choose a password (at least 10 characters)</label><input id="r-password" type="password" required minlength="10" autocomplete="new-password"></div>
+      <div class="field"><label for="r-password2">Type the password again</label><input id="r-password2" type="password" required minlength="10" autocomplete="new-password"></div>
+    </div>
+    <div class="field hp" aria-hidden="true"><label for="r-website">Leave this empty</label><input id="r-website" tabindex="-1" autocomplete="off"></div>
+    <div class="actions"><button class="btn" type="submit">Send request</button><a href="/officers">Already approved? Sign in</a><span class="err" id="r-err" role="alert"></span></div>
+    <p class="ok" id="r-ok" role="status" hidden></p>
+  </form>
+</div></section>
+{% endblock %}
+{% block scripts %}<script src="/static/request.js?v={{ asset_version }}" defer></script>{% endblock %}
