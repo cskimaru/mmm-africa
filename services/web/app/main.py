@@ -105,7 +105,6 @@ templates.env.globals.update(
     site_origin=settings.site_origin,
     site_preview=settings.site_preview,
     palettes=PALETTES,
-    map_source=AFRICA_MAP["source"],
     year=date.today().year,
 )
 

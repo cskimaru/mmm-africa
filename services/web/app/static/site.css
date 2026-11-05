@@ -167,7 +167,7 @@ img{max-width:100%}
 /* ---------- Map ---------- */
 .africa-map{margin:0}
 .africa-map svg{display:block;width:100%;height:auto;max-height:520px;filter:drop-shadow(0 10px 18px rgba(60,35,20,.15))}
-.country{fill:var(--map-empty);stroke:var(--card-solid);stroke-width:.4;transition:fill .2s}
+.country{fill:var(--map-empty);stroke:var(--card-solid);stroke-width:.9;stroke-linejoin:round;transition:fill .2s}
 .country.is-established{fill:var(--c3)}
 .country.is-forming{fill:var(--map-forming)}
 a .country:hover{fill:var(--c1);cursor:pointer}

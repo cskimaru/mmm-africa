@@ -68,5 +68,5 @@ pip install -e libs/common -r requirements-dev.txt -r services/<service>/require
 make test lint
 ```
 
-Credits: built on the same foundation as the Martha Kemunto Ongosi memorial site. Map of Africa from
-[@svg-maps/world](https://github.com/VictorCazanave/svg-maps) by Victor Cazanave, CC BY 4.0.
+Credits: built on the same foundation as the Martha Kemunto Ongosi memorial site. The map of Africa is drawn from
+[Natural Earth](https://www.naturalearthdata.com/) data, which is in the public domain.
