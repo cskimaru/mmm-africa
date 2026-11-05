@@ -300,7 +300,7 @@
             h("button", { class: "btn small", type: "button", onclick: decide("approve", { roles: ["editor"] }, r.display_name + " can now sign in as an editor") }, "Approve as editor"), " ",
             h("button", { class: "btn small ghost", type: "button", onclick: decide("approve", { roles: ["owner"] }, r.display_name + " can now sign in as an owner") }, "Approve as owner"), " ",
             decline));
-      }) : [h("tr", null, h("td", { colspan: "7", class: "muted" }, "No requests waiting."))]));
+      }) : [h("tr", null, h("td", { colspan: "7", class: "muted" }, "No sign-ups waiting."))]));
       const tab = document.querySelector("[data-tab=people]");
       tab.textContent = requests.length ? `Officer accounts (${requests.length} waiting)` : "Officer accounts";
       $("users-body").replaceChildren(...users.map((u) => {

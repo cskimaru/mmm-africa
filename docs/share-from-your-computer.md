@@ -94,7 +94,9 @@ Everything visitors read is edited from the officers' area (`/officers`), with n
 * **Chapters**, **Leaders**, **Events**: the chapter map and list, the leadership page, and the events.
 * **Messages**: what visitors send from the contact page.
 
-Invite other leaders from **Officer accounts**. *Editors* can change all content; *owners* can also manage accounts.
+Other leaders **sign up** at `/officers/signup` (name, email, phone with country code, position, country,
+password). An owner approves each sign-up in **Officer accounts** as an *editor* (changes all content) or an *owner*
+(can also approve sign-ups and manage accounts). Owners can also invite someone by link from the same tab.
 
 ## Password-protecting the site (optional)
 

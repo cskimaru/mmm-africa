@@ -10,7 +10,7 @@
     <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" required></div>
     <div class="field"><label for="l-password">Password</label><input id="l-password" type="password" autocomplete="current-password" required></div>
     <div class="actions"><button class="btn" type="submit">Sign in</button><span class="err" id="l-err" role="alert"></span></div>
-    <p class="muted small">New here? <a href="/officers/request">Request access</a>. An owner approves each request.</p>
+    <p class="muted small">New here? <a href="/officers/signup">Sign up</a>. An owner approves each new account.</p>
   </form>
 
   <div id="dash" hidden>
@@ -169,8 +169,8 @@
     </section>
 
     <section data-panel="people" hidden>
-      <h2>Requests waiting for approval</h2>
-      <p class="help">Leaders who asked for access from the <a href="/officers/request" target="_blank" rel="noopener">Request access</a> page.
+      <h2>Sign-ups waiting for approval</h2>
+      <p class="help">Leaders who signed up on the <a href="/officers/signup" target="_blank" rel="noopener">Sign up</a> page.
         Check their details, then approve them as an <strong>Editor</strong> (can change all content) or an
         <strong>Owner</strong> (can also approve others and manage accounts).</p>
       <div class="table-wrap"><table><thead><tr><th>Name</th><th>Position</th><th>Email</th><th>Phone</th><th>Country</th><th>Asked</th><th></th></tr></thead><tbody id="requests-body"></tbody></table></div>

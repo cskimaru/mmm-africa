@@ -5,7 +5,7 @@ from datetime import date
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -299,9 +299,14 @@ async def officers(request: Request) -> HTMLResponse:
     return await render(request, "officers.html", {"nav": "", "groups": GROUPS}, cache=False)
 
 
-@app.get("/officers/request", response_class=HTMLResponse)
-async def request_access(request: Request) -> HTMLResponse:
+@app.get("/officers/signup", response_class=HTMLResponse)
+async def sign_up(request: Request) -> HTMLResponse:
     return await render(request, "request.html", {"nav": ""}, cache=False)
+
+
+@app.get("/officers/request", include_in_schema=False)
+async def old_sign_up_address() -> RedirectResponse:
+    return RedirectResponse("/officers/signup", status_code=301)
 
 
 @app.get("/invite", response_class=HTMLResponse)

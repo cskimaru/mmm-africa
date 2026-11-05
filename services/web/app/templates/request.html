@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Request access · MMM Africa{% endblock %}
+{% block title %}Sign up · MMM Africa{% endblock %}
 {% block meta %}<meta name="robots" content="noindex">{% endblock %}
 {% block body %}
 <section class="section"><div class="wrap narrow">
-  <h1 class="grad">Request access to the officers' area</h1>
-  <p class="help">For leaders who will help run this website. An owner checks every request; you can sign in once it is
-    approved.</p>
+  <h1 class="grad">Sign up for the officers' area</h1>
+  <p class="help">For leaders who will help run this website. An owner checks every sign-up; you can sign in once your
+    account is approved.</p>
   <form class="card form" id="request-form" novalidate>
     <div class="row">
       <div class="field"><label for="r-name">Full name</label><input id="r-name" required maxlength="120" autocomplete="name"></div>
@@ -24,7 +24,7 @@
       <div class="field"><label for="r-password2">Type the password again</label><input id="r-password2" type="password" required minlength="10" autocomplete="new-password"></div>
     </div>
     <div class="field hp" aria-hidden="true"><label for="r-website">Leave this empty</label><input id="r-website" tabindex="-1" autocomplete="off"></div>
-    <div class="actions"><button class="btn" type="submit">Send request</button><a href="/officers">Already approved? Sign in</a><span class="err" id="r-err" role="alert"></span></div>
+    <div class="actions"><button class="btn" type="submit">Sign up</button><a href="/officers">Already approved? Sign in</a><span class="err" id="r-err" role="alert"></span></div>
     <p class="ok" id="r-ok" role="status" hidden></p>
   </form>
 </div></section>

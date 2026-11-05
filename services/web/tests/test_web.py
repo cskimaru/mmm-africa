@@ -243,8 +243,10 @@ async def test_background_pictures_get_a_fingerprint_so_changes_show(client):
 @respx.mock
 async def test_request_access_page(client):
     mock_all()
-    r = await client.get("/officers/request")
+    r = await client.get("/officers/signup")
     assert r.status_code == 200
     assert 'id="r-phone"' in r.text and "country code" in r.text
     assert r.headers["cache-control"] == "no-store"
-    assert "Request access" in (await client.get("/officers")).text
+    assert 'href="/officers/signup">Sign up' in (await client.get("/officers")).text
+    old = await client.get("/officers/request")
+    assert old.status_code == 301 and old.headers["location"] == "/officers/signup"

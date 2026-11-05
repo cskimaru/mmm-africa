@@ -144,9 +144,7 @@ async def login(
             .first()
         )
         if pending and verify_password(pending.password_hash, body.password):
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN, "Your request for access is waiting for an owner to approve it."
-            )
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Your sign-up is waiting for an owner to approve it.")
     if not user or not ok or not user.is_active:
         if user:
             user.failed_logins += 1
@@ -444,7 +442,7 @@ async def request_access(
     s: AsyncSession = Depends(session_dep),
     settings: Settings = Depends(settings_dep),
 ) -> dict:
-    done = {"detail": "Thank you. An owner will review your request. You can sign in once it is approved."}
+    done = {"detail": "Thank you for signing up. You can sign in once an owner approves your account."}
     if body.website:
         return done
     email = str(body.email).lower()
@@ -454,7 +452,7 @@ async def request_access(
         await s.execute(select(AccessRequest).where(AccessRequest.email == email, AccessRequest.status == "pending"))
     ).scalar_one_or_none()
     if waiting:
-        raise HTTPException(409, "A request for this email is already waiting for approval.")
+        raise HTTPException(409, "A sign-up with this email is already waiting for approval.")
     check_password_strength(body.password, settings, email)
     r = AccessRequest(
         email=email,

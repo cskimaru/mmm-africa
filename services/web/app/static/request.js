@@ -1,4 +1,4 @@
-/* Request access: a leader asks for an officers' account; an owner approves it. */
+/* Sign up: a leader creates an officers' account, which an owner approves before it works. */
 (function () {
   "use strict";
   const { api } = window.MM;
